@@ -646,12 +646,12 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
             Reuses one animated trigger per unique pitch with a single static sensor block. Repeated notes in the same pitch lane are merged into the same trigger timeline, so the saver actually cuts node churn. With Exact Length, triggers stay inside the sensor block for the note's full duration and only move in Z (never left/right).
           </div>
           <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 13px;border-radius:10px;border:1px solid var(--b);background:rgba(255,255,255,.02);transition:background .15s" id="prefabLabel">
-            <input type="checkbox" id="prefabCheck" style="width:16px;height:16px;accent-color:var(--a2);cursor:pointer;flex-shrink:0"/>
+            <input type="checkbox" id="prefabCheck" style="width:16px;height:16px;accent-color:#7fd3ff;cursor:pointer;flex-shrink:0"/>
             <span style="font-size:13px;font-weight:600">Prefab Friendly</span>
-            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(155,127,255,.1);border:1px solid rgba(155,127,255,.3);color:var(--a2);margin-left:auto;flex-shrink:0">NEW</span>
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(127,211,255,.1);border:1px solid rgba(127,211,255,.3);color:#7fd3ff;margin-left:auto;flex-shrink:0">NEW</span>
           </label>
-          <div id="prefabDesc" style="display:none;font-size:11px;color:var(--m);line-height:1.65;padding:8px 13px;border-radius:9px;background:rgba(155,127,255,.04);border:1px solid rgba(155,127,255,.12)">
-            Splits the level into small <b style="color:var(--a2)">self-contained groups</b> — each with its own sensor, triggers, and sounds — sized to stay at or under <b>50 complexity</b> (9 pitches max per part). Nothing in one part ever references another, and every trigger fires on absolute song-time, so you can pull any part out into its own prefab, drop it in any order, in any level, and it still plays its notes in sync with the rest. Works with Instrument Recreation — each instrument is still matched to a real GRAB preset, just packaged into ≤50-complexity chunks instead of one big rig. Overrides Complexity Saver and Same-Note-Doubling (not needed — every part is already its own tiny CS-style rig).
+          <div id="prefabDesc" style="display:none;font-size:11px;color:var(--m);line-height:1.65;padding:8px 13px;border-radius:9px;background:rgba(127,211,255,.04);border:1px solid rgba(127,211,255,.15)">
+            Splits the whole song into small <b style="color:#7fd3ff">levelNodeGroup</b> parts (≤4 pitches each), so <b style="color:#7fd3ff">every single part is ≤50 complexity</b> — easy to select and save as an in-game prefab. Each part's trigger has no external ID reference (wildcard source), so parts can be extracted, reordered, or recombined in <b style="color:#7fd3ff">any order</b> and still play back correctly against the original song timing. With Instrument Recreation on, parts are chunked per-instrument instead of by raw pitch. Overrides Complexity Saver / Same Note at Same Time while active.
           </div>
         </div>
         <div class="r3">
@@ -1872,7 +1872,7 @@ function matchPresetForGM(gmName, gmProgram, isDrum){
   return 'pad';
 }
 
-function buildLevelJSON({events, voiceCount, spacing, vol, atk, wave, title, useInstrRecreation=false, pitchProgramMap=null, gmToParams=null, useDupeNotes=false, useExactLength=false, useComplexitySaver=false, usePrefabFriendly=false, creator='MIDI2GRAB', description='', tags=['innovative','showcase'], ambienceSettings=null, reverbDelay=0, reverbDecay=0, vibratoStr=0, vibratoSpd=0, lpfFreq=10000, layout='linear', offsetX=0, offsetY=0, offsetZ=0, blockMaterial=8, blockScale=0.8, blockNeon=true, mirrorLayout=false, addSpawnPlatform=false, addFinishSign=false, soundRangeFactor=1000, maxCheckpointCount=10, showReplays=true, envPunch=0, freqRamp=0, stereoSpread=0, pitchJump=false, pitchJumpStr=0.8, pitchJumpSpd=450, tremolo=false, tremoloSpd=10, waveMotion=false, waveAmp=0.25, waveFreq=1.0, velTriggerSize=false}){
+function buildLevelJSON({events, voiceCount, spacing, vol, atk, wave, title, useInstrRecreation=false, pitchProgramMap=null, gmToParams=null, useDupeNotes=false, useExactLength=false, useComplexitySaver=false, creator='MIDI2GRAB', description='', tags=['innovative','showcase'], ambienceSettings=null, reverbDelay=0, reverbDecay=0, vibratoStr=0, vibratoSpd=0, lpfFreq=10000, layout='linear', offsetX=0, offsetY=0, offsetZ=0, blockMaterial=8, blockScale=0.8, blockNeon=true, mirrorLayout=false, addSpawnPlatform=false, addFinishSign=false, soundRangeFactor=1000, maxCheckpointCount=10, showReplays=true, envPunch=0, freqRamp=0, stereoSpread=0, pitchJump=false, pitchJumpStr=0.8, pitchJumpSpd=450, tremolo=false, tremoloSpd=10, waveMotion=false, waveAmp=0.25, waveFreq=1.0, velTriggerSize=false}){
   const waveType = Math.min(3, Math.max(0, Math.round(wave)));
   const pitchSet=new Set(events.map(e=>e.midi));
   const pitches=[...pitchSet].sort((a,b)=>a-b);
@@ -1911,21 +1911,6 @@ function buildLevelJSON({events, voiceCount, spacing, vol, atk, wave, title, use
   doubledPitches.forEach((m,i)=>secInfo.set(m,{soundId:secSoundBase+i,triggerId:secTrigBase+i}));
   const nodes=[];
 
-
-  // ── Prefab-friendly mode ────────────────────────────────────────────────
-  // Takes priority over the shared-rig multi-instrument path: splits the
-  // song into small self-contained ≤50-complexity groups instead. Still
-  // runs instrument recreation internally when requested.
-  if(usePrefabFriendly){
-    return buildPrefabFriendlyJSON({
-      events, spacing, vol, atk, wave, title, creator, description, tags,
-      ambienceSettings, reverbDelay, reverbDecay, vibratoStr, vibratoSpd, lpfFreq,
-      layout, offsetX, offsetY, offsetZ, blockMaterial, blockScale, blockNeon,
-      useExactLength, useInstrRecreation, gmToParams,
-      mirrorLayout, soundRangeFactor, maxCheckpointCount, showReplays,
-      envPunch, freqRamp, addSpawnPlatform, addFinishSign
-    });
-  }
 
   // ── Multi-instrument mode ─────────────────────────────────────────────────
   // When Instrument Recreation is on, build a separate pitch-reuse track per
@@ -2632,296 +2617,6 @@ function buildMultiInstrumentJSON({
 }
 
 // ═══════════════════════════════════════════════
-//  PREFAB-FRIENDLY BUILD
-//  Splits the song into small, fully self-contained groups ("parts").
-//  Each part = 1 sensor + up to 9 pitches, each pitch = 1 sound + 1
-//  animated trigger. Cost: 2(sensor) + 9*(2 sound+3 trigger) = 47 ≤ 50.
-//  Every part is wrapped in its own levelNodeGroup and its triggers only
-//  ever reference IDs inside that same group — nothing crosses part
-//  boundaries. Since every trigger's animation frames are keyed to
-//  absolute song-time (t=0 = level load, same convention used by every
-//  other mode in this tool), a part played completely alone still fires
-//  its own notes at the exact right moments — so parts stay in sync with
-//  each other no matter what order they're dropped into a scene, and a
-//  part pulled out on its own still sounds correct.
-//  When useInstrRecreation is on, instruments are identified the same
-//  way as buildMultiInstrumentJSON (matchPresetForGM / GRAB_SOUND_REF_PRESETS
-//  / drum handling) — just packaged as parts instead of one shared rig.
-// ═══════════════════════════════════════════════
-const MAX_PITCHES_PER_PART = 9; // 2 + 9*(2+3) = 47 ≤ 50
-
-function buildPrefabFriendlyJSON({
-  events, spacing, vol, atk, wave, title, creator, description, tags,
-  ambienceSettings, reverbDelay, reverbDecay, vibratoStr, vibratoSpd, lpfFreq,
-  layout, offsetX, offsetY, offsetZ, blockMaterial, blockScale, blockNeon,
-  useExactLength, useInstrRecreation, gmToParams,
-  mirrorLayout=false, soundRangeFactor=1000, maxCheckpointCount=10, showReplays=true,
-  envPunch=0, freqRamp=0, addSpawnPlatform=false, addFinishSign=false
-}){
-  const songDuration = events.length ? Math.max(...events.map(e=>e.time+e.dur)) : 0;
-  offsetX=offsetX||0; offsetY=offsetY||0; offsetZ=offsetZ||0;
-  const Z_SPACING=6.0, AWAY_Z=2.5, HIT_Z=-0.15, HOLD=0.10;
-
-  // ── Build layers: one per recreated instrument, or one flat layer ───────
-  let layerData;
-  if (useInstrRecreation){
-    const groupMap=new Map();
-    for (const ev of events){
-      const isDrum=(ev.channel===9);
-      const prog=isDrum?-1:(ev.program??0);
-      const key=isDrum?'__drums__':`p${prog}`;
-      if(!groupMap.has(key)) groupMap.set(key,{prog,isDrum,evts:[]});
-      const ev2=isDrum?{...ev,midi:canonicalizeDrumNote(ev.midi)}:ev;
-      groupMap.get(key).evts.push(ev2);
-    }
-    const instrData=[...groupMap.entries()].sort(([a],[b])=>a<b?-1:1).map(([key,g])=>{
-      const pitches=[...new Set(g.evts.map(e=>e.midi))].sort((a,b)=>a-b);
-      const gmName=g.isDrum?'Drums':(GM_NAMES_GLOBAL[Math.max(0,Math.min(127,g.prog))]||'Unknown');
-      const presetKey=g.isDrum?'drum_kit':matchPresetForGM(gmName,g.prog,false);
-      return {prog:g.prog,isDrum:g.isDrum,gmName,presetKey,pitches,evts:g.evts};
-    });
-    const presetGroups=new Map();
-    for (const instr of instrData){
-      const pk=instr.isDrum?'__drums__':(instr.presetKey||`_p${instr.prog}`);
-      if(!presetGroups.has(pk)) presetGroups.set(pk,{presetKey:instr.presetKey,isDrum:instr.isDrum,prog:instr.prog,pitchSet:new Set(),events:[],names:[]});
-      const g=presetGroups.get(pk);
-      g.names.push(instr.gmName);
-      for(const ev of instr.evts) g.events.push(ev);
-      for(const p of instr.pitches) g.pitchSet.add(p);
-    }
-    layerData=[...presetGroups.values()].map((g,i)=>({
-      presetKey:g.presetKey, isDrum:g.isDrum, prog:g.prog,
-      gmName:g.names.length>1?g.names.slice(0,2).join('+'):g.names[0],
-      pitches:[...g.pitchSet].sort((a,b)=>a-b),
-      events:g.events.sort((a,b)=>a.time-b.time),
-      zOff:-i*Z_SPACING
-    }));
-    // Cap melodic layers at 4 (same rule as buildMultiInstrumentJSON) so a
-    // song with lots of GM programs doesn't explode into dozens of layers.
-    const MAX_MELODIC_LAYERS=4;
-    const melodic=layerData.filter(l=>!l.isDrum), drums=layerData.filter(l=>l.isDrum);
-    if (melodic.length>MAX_MELODIC_LAYERS){
-      melodic.sort((a,b)=>b.events.length-a.events.length);
-      const keep=melodic.slice(0,MAX_MELODIC_LAYERS), excess=melodic.slice(MAX_MELODIC_LAYERS);
-      for (const ex of excess){
-        let best=keep.find(k=>k.presetKey===ex.presetKey) || keep[0];
-        for (const ev of ex.events) best.events.push(ev);
-        for (const m of ex.pitches) if(!best.pitches.includes(m)) best.pitches.push(m);
-        best.events.sort((a,b)=>a.time-b.time); best.pitches.sort((a,b)=>a-b);
-      }
-      layerData=[];
-      keep.forEach((l,i)=>{l.zOff=-i*Z_SPACING; layerData.push(l);});
-      drums.forEach((l,i)=>{l.zOff=-(keep.length+i)*Z_SPACING; layerData.push(l);});
-    }
-  } else {
-    const allPitchesFlat=[...new Set(events.map(e=>e.midi))].sort((a,b)=>a-b);
-    layerData=[{presetKey:null,isDrum:false,prog:0,gmName:'Instrument',pitches:allPitchesFlat,events,zOff:0}];
-  }
-
-  // ── Global pitch X/Y layout (same physical position per pitch as every
-  //    other mode; Z is always flat per computePitchLayout, so only X/Y
-  //    are pulled from it here — layer Z-stacking is added separately) ───
-  const allPitchesGlobal=[...new Set(layerData.flatMap(l=>l.pitches))].sort((a,b)=>a-b);
-  const _ord=mirrorLayout?[...allPitchesGlobal].reverse():allPitchesGlobal;
-  const pitchPos=computePitchLayout(_ord, layout||'linear', spacing, offsetX, 0, offsetZ);
-  const px=m=>(pitchPos.get(m)||{x:0}).x;
-  const py=m=>(pitchPos.get(m)||{y:0}).y||0;
-
-  // ── Sound-param helpers (reuses recreation presets, or single-wave default) ──
-  function applyExactLengthRelease(p){ return useExactLength?{...p,envelopeRelease:0}:p; }
-  function getDrumPreset(m){
-    return GM_DRUM_NOTE_PRESET[m]||(m<=37?'drum_kick':m<=43?'drum_snare':m<=48?'drum_tom':m<=53?'hihat_closed':m<=55?'crash':'tick');
-  }
-  function avgVelForPitch(layerEvts,m){
-    const evts=layerEvts.filter(e=>e.midi===m);
-    if(!evts.length) return vol;
-    const av=evts.reduce((s,e)=>s+(e.vel||0.8),0)/evts.length;
-    return Math.max(0.1,Math.min(9,vol*(0.5+av*0.85)));
-  }
-  function getPartSoundParams(layer, m){
-    const freq=Math.round(midiFreq(m));
-    if (useInstrRecreation){
-      const pitchVol=avgVelForPitch(layer.events,m);
-      if (layer.isDrum){
-        const dp=GRAB_SOUND_REF_PRESETS[getDrumPreset(m)]||GRAB_SOUND_REF_PRESETS.drum_kick;
-        const dvs=dp.drumVolumeScale??1.0;
-        const {drumVolumeScale:_dvs, ...dpClean}=dp;
-        return applyExactLengthRelease({...dpClean,volume:Math.min(9,pitchVol*dvs),frequencyBase:freq,
-          frequencyLimit:dpClean.frequencyLimit||30, reverbDelay,reverbDecayFactor:reverbDecay});
-      }
-      const pb=(layer.presetKey && layer.presetKey!=='drum_kit')?GRAB_SOUND_REF_PRESETS[layer.presetKey]:null;
-      if (pb){
-        const evtsAt=layer.events.filter(e=>e.midi===m);
-        const avgVel=evtsAt.length?evtsAt.reduce((s,e)=>s+(e.vel||0.8),0)/evtsAt.length:0.8;
-        const isSlow=['strings','choir','pad','pad_metallic','pad_sweep'].includes(layer.presetKey);
-        const baseAtk=pb.envelopeAttack||0;
-        const velAtk=isSlow?baseAtk*(0.5+(1-avgVel)*0.8):baseAtk;
-        return applyExactLengthRelease({...pb,volume:pitchVol,frequencyBase:freq,
-          frequencyLimit:pb.frequencyLimit||30, envelopeAttack:velAtk,
-          reverbDelay,reverbDecayFactor:reverbDecay,
-          vibratoStrength:(vibratoStr>0)?vibratoStr:(pb.vibratoStrength||0),
-          vibratoSpeed:(vibratoSpd>0)?vibratoSpd:(pb.vibratoSpeed||0),
-          lowPassFilterFrequency:(lpfFreq<9999)?lpfFreq:(pb.lowPassFilterFrequency||10000)});
-      }
-      if (gmToParams) return applyExactLengthRelease({...gmToParams(layer.prog||0,pitchVol),frequencyBase:freq,reverbDelay,reverbDecayFactor:reverbDecay});
-    }
-    const wt=Math.min(3,Math.max(0,Math.round(wave||3)));
-    return applyExactLengthRelease({
-      volume:vol, waveType:wt, envelopeAttack:atk,
-      envelopeSustain:.10, envelopeRelease:.12, envelopePunch:envPunch||0,
-      frequencyBase:freq, frequencyLimit:30, frequencyRamp:freqRamp||0, frequencyDeltaRamp:0,
-      vibratoStrength:vibratoStr, vibratoSpeed:vibratoSpd,
-      pitchJumpMod:0, pitchJumpSpeed:0, dutyCycle:.5, dutyCycleRamp:0,
-      repeatSpeed:0, flangerFrequency:0, flangerDepth:0,
-      lowPassFilterFrequency:lpfFreq, highPassFilterFrequency:0,
-      reverbDelay, reverbDecayFactor:reverbDecay
-    });
-  }
-
-  // ── Build parts: chunk each layer's pitches into ≤9-pitch self-contained groups ──
-  const nodes=[];
-  let nextId=1;
-  const partsGuide=[];
-
-  layerData.forEach((layer, layerIdx)=>{
-    const layerZ=offsetZ+layer.zOff;
-    const pitchIntervals=mergePitchIntervals(layer.events, useExactLength?0.01:0.02);
-    const tag=(layer.gmName||'Instrument').replace(/[^A-Za-z0-9]/g,'_').slice(0,10);
-    const numParts=Math.ceil(layer.pitches.length/MAX_PITCHES_PER_PART);
-
-    for (let pi=0; pi<numParts; pi++){
-      const chunk=layer.pitches.slice(pi*MAX_PITCHES_PER_PART,(pi+1)*MAX_PITCHES_PER_PART);
-      if(!chunk.length) continue;
-
-      // Group pivot: average X of this chunk's own pitches, layer's flat Y/Z.
-      // Children below are positioned RELATIVE to this pivot, so the group
-      // can be selected/moved/prefabbed as one clean unit in the editor.
-      const avgX=chunk.reduce((s,m)=>s+px(m),0)/chunk.length;
-      const groupPos={x:avgX, y:offsetY, z:layerZ};
-
-      const sensorId=nextId++;
-      const soundIds=new Map(); chunk.forEach(m=>soundIds.set(m,nextId++));
-      const trigIds=new Map();  chunk.forEach(m=>trigIds.set(m,nextId++));
-
-      const chunkXSpan=Math.max(2,(chunk.length-1)*spacing+spacing*2);
-      const children=[];
-
-      // Local sensor — transparent bar spanning just this part's own pitches
-      children.push({objectID:sensorId, levelNodeStatic:{
-        shape:1000, position:{x:0,y:0,z:0}, scale:{x:chunkXSpan,y:1.2,z:1.2},
-        rotation:{x:0,y:0,z:0,w:1}, material:blockMaterial||8,
-        isNeon:false, isTransparent:true, isGrabbable:false,
-        isGrapplable:false, isPassable:false, isAdditive:false, specularBrightness:0
-      }});
-
-      chunk.forEach(m=>{
-        const lx=px(m)-groupPos.x;
-        // sound block (local Y still respects arc/chromatic layout variation)
-        children.push({objectID:soundIds.get(m), levelNodeSound:{
-          position:{x:lx,y:2.5+py(m),z:0}, rotation:{x:0,y:0,z:0,w:1}, scale:{x:1,y:1,z:1},
-          startActive:false,
-          parameters:getPartSoundParams(layer,m),
-          volume:vol, maxRangeFactor:soundRangeFactor||1000, repeat:useExactLength,
-          name:`${tag}_pt${pi+1}_${noteName(m).replace('#','s')}`
-        }});
-        // Animated trigger — own full-song animation, targets ONLY this
-        // part's own sensor. No reference ever leaves this group.
-        const intervals=pitchIntervals.get(m)||[];
-        const frames=[{time:0,position:{x:lx,y:0,z:AWAY_Z},rotation:{x:0,y:0,z:0,w:1}}];
-        for (const seg of intervals){
-          const t0=Math.max(0,seg.start-HOLD), t1=seg.start;
-          const t2=useExactLength?Math.max(seg.end,seg.start+HOLD):seg.start+HOLD;
-          frames.push(
-            {time:t0,position:{x:lx,y:0,z:AWAY_Z},rotation:{x:0,y:0,z:0,w:1}},
-            {time:t1,position:{x:lx,y:0,z:AWAY_Z},rotation:{x:0,y:0,z:0,w:1}},
-            {time:t1,position:{x:lx,y:0,z:HIT_Z}, rotation:{x:0,y:0,z:0,w:1}},
-            {time:t2,position:{x:lx,y:0,z:HIT_Z}, rotation:{x:0,y:0,z:0,w:1}},
-            {time:t2,position:{x:lx,y:0,z:AWAY_Z},rotation:{x:0,y:0,z:0,w:1}}
-          );
-        }
-        frames.push({time:songDuration+1,position:{x:lx,y:0,z:AWAY_Z},rotation:{x:0,y:0,z:0,w:1}});
-
-        const tgts=useExactLength?[
-          {triggerTargetSound:{objectID:soundIds.get(m),mode:3,repeat:true}},
-          {triggerTargetSound:{objectID:soundIds.get(m),repeat:true},mode:1}
-        ]:[{triggerTargetSound:{objectID:soundIds.get(m),mode:3}}];
-
-        const trigNode={
-          objectID:trigIds.get(m),
-          animations:[{name:`pt${layerIdx}_${pi}_${noteName(m).replace('#','s')}`,speed:1,currentFrameIndex:0,frames}],
-          activeAnimation:0,
-          levelNodeTrigger:{
-            shape:1000, position:{x:lx,y:0,z:AWAY_Z}, scale:{x:1.1,y:1.1,z:1.1},
-            rotation:{x:0,y:0,z:0,w:1}, isShared:false,
-            triggerSources:[{triggerSourceBasic:{type:4,objectID:sensorId}}],
-            triggerTargets:tgts
-          }
-        };
-        if(useExactLength) trigNode.levelNodeTrigger.triggerExitTargets=[{triggerTargetSound:{objectID:soundIds.get(m),mode:0}}];
-        children.push(trigNode);
-      });
-
-      const partComplexity=2+chunk.length*5; // 2(sensor)+N*(2 sound+3 trigger)
-      nodes.push({levelNodeGroup:{
-        position:groupPos, rotation:{x:0,y:0,z:0,w:1}, scale:{x:1,y:1,z:1},
-        childNodes:children
-      }});
-      partsGuide.push({
-        layer:layerIdx+1, part:pi+1, instrument:layer.gmName||'Instrument',
-        preset:layer.presetKey||(useInstrRecreation?'gm-fallback':'single-wave'),
-        pitches:chunk.length, pitchRange:`${noteName(chunk[0])}–${noteName(chunk[chunk.length-1])}`,
-        notes:chunk.reduce((s,m)=>s+(pitchIntervals.get(m)||[]).length,0),
-        complexity:partComplexity
-      });
-    }
-  });
-
-  // ── Title sign + optional platform/finish — shared, outside every part,
-  //    so it never counts against any individual part's 50-complexity budget ──
-  const signTitle=(title||'midi_level').replace(/\.(mid|midi)$/i,'');
-  if (addSpawnPlatform){
-    const pw=Math.max(8,(allPitchesGlobal.length-1)*(spacing||3)+4);
-    nodes.push({levelNodeStatic:{
-      shape:1000, material:0, position:{x:offsetX,y:offsetY-1.5,z:offsetZ+2.5+2},
-      scale:{x:pw,y:0.4,z:4}, rotation:{x:0,y:0,z:0,w:1},
-      isNeon:false,isTransparent:false,isGrabbable:false,
-      isGrapplable:false,isPassable:false,isAdditive:false,specularBrightness:0.1
-    }});
-  }
-  nodes.push({levelNodeSign:{
-    position:{x:offsetX,y:offsetY+1.5,z:offsetZ+AWAY_Z+0.8},
-    rotation:{x:0,y:0.7071068,z:0,w:0.7071068},
-    text:`${signTitle}\nMIDI2GRAB · prefab friendly\n${partsGuide.length} self-contained parts\nBy ${creator||'Bananamaster6'}`,
-    scale:18.816558837890625, hideModel:true, weight:1, isNeon:true
-  }});
-  if (addFinishSign){
-    const fw=(allPitchesGlobal.length>0?(allPitchesGlobal.length-1)*(spacing||3)/2+4:6);
-    nodes.push({levelNodeSign:{
-      position:{x:offsetX+fw,y:offsetY+2,z:offsetZ},
-      rotation:{x:0,y:0.7071068,z:0,w:0.7071068},
-      text:`${signTitle}\n🏆 FINISH 🏆\nGood run!`, scale:22, hideModel:false, weight:1, isNeon:true
-    }});
-  }
-
-  const totalPartsComplexity=partsGuide.reduce((s,p)=>s+p.complexity,0);
-  const maxPartComplexity=partsGuide.length?Math.max(...partsGuide.map(p=>p.complexity)):0;
-
-  const defaultAmbience={skyZenithColor:{r:.04,g:.05,b:.10,a:1},skyHorizonColor:{r:.08,g:.10,b:.16,a:1},sunAltitude:30,sunAzimuth:270,sunSize:.5,fogDensity:0};
-  const finalAmbience=ambienceSettings||defaultAmbience;
-
-  return {
-    formatVersion:22, title:title||'midi_level', creators:creator||'MIDI2GRAB',
-    description:description||`${partsGuide.length} prefab-friendly parts (≤50 complexity each, max ${maxPartComplexity}) · ${layerData.length} instrument${layerData.length!==1?'s':''} · ${events.length} notes`,
-    tags:tags||['innovative','showcase'],
-    maxCheckpointCount:maxCheckpointCount||10, showReplays:showReplays!==false,
-    fogDensity:finalAmbience.fogDensity||0, ambienceSettings:finalAmbience,
-    levelNodes:nodes,
-    _prefabGuide:partsGuide,
-    _prefabTotals:{parts:partsGuide.length,totalComplexity:totalPartsComplexity,maxPartComplexity,maxPitchesPerPart:MAX_PITCHES_PER_PART}
-  };
-}
-
-// ═══════════════════════════════════════════════
 //  SKY PRESETS
 // ═══════════════════════════════════════════════
 const SKY_PRESETS = {
@@ -3028,6 +2723,213 @@ function detectKey(events){
 }
 
 // ═══════════════════════════════════════════════
+//  PREFAB FRIENDLY MODE
+//  Splits the song into small, fully self-contained
+//  levelNodeGroup "parts". Each part holds ONLY local
+//  (group-relative) coordinates and never references
+//  another part's objectID, so parts can be extracted,
+//  reordered, or recombined in ANY order/subset and still
+//  play back correctly:
+//    • Trigger sources are wildcarded (isShared:true,
+//      {triggerSourceBasic:{type:4}} with NO objectID) —
+//      proven working in real exported GRAB levels — so a
+//      part never depends on knowing another part's IDs.
+//    • Every animation keyframe uses the note's ABSOLUTE
+//      time in the original song (never reset per part),
+//      so combining/reordering parts never shifts timing.
+//    • Each part gets its own large, non-overlapping
+//      objectID block, so combining many parts (or the
+//      same part twice) can never collide.
+//    • Per-part complexity: sound=8, trigger=3, block=2.
+//      P pitches -> 8P + 3P + 2 = 11P + 2. Capping at
+//      P=4 gives 46 (<=50); P=5 would be 57 (>50).
+// ═══════════════════════════════════════════════
+const PREFAB_MAX_PITCHES_PER_PART = 4;
+const PREFAB_ID_BLOCK = 20;   // objectIDs reserved per part (needs ~9, rest is headroom)
+const PREFAB_ID_BASE  = 100000;
+
+function calcPrefabPartComplexity(pitchCount){
+  return pitchCount*8 + pitchCount*3 + 2; // sounds + triggers + 1 shared sensor block
+}
+
+function chunkArray(arr, size){
+  const out=[];
+  for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size));
+  return out;
+}
+
+// Groups events either by GM instrument (channel 9 = drums, canonicalized),
+// or as a single group covering the whole song when instrument recreation
+// is off — the caller then chunks each group's pitches into ≤4-pitch parts.
+function groupEventsForPrefab(events, pitchProgramMap, useInstrRecreation){
+  if(!useInstrRecreation){
+    return [{ name:'Song', program:null, events:[...events] }];
+  }
+  const groupMap=new Map();
+  for(const ev of events){
+    const isDrum=(ev.channel===9);
+    const prog=isDrum?-1:(ev.program ?? pitchProgramMap?.get(ev.midi) ?? 0);
+    const key=isDrum?'__drums__':`p${prog}`;
+    if(!groupMap.has(key)) groupMap.set(key,{prog,isDrum,evts:[]});
+    const ev2=isDrum?{...ev,midi:canonicalizeDrumNote(ev.midi)}:ev;
+    groupMap.get(key).evts.push(ev2);
+  }
+  return [...groupMap.entries()].sort(([a],[b])=>a<b?-1:1).map(([key,g])=>{
+    const gmName = g.isDrum ? 'Drums' : (GM_NAMES_GLOBAL[Math.max(0,Math.min(127,g.prog))]||'Instrument');
+    return { name:gmName, program:g.prog, isDrum:g.isDrum, events:g.evts };
+  });
+}
+
+function buildPrefabFriendlyJSON({
+  events, title, creator, description, tags, ambienceSettings,
+  vol, atk, wave, reverbDelay, reverbDecay, vibratoStr, vibratoSpd, lpfFreq,
+  useInstrRecreation, pitchProgramMap, gmToParams, useExactLength
+}){
+  const waveType=Math.min(3,Math.max(0,Math.round(wave)));
+  const songDuration=events.length?Math.max(...events.map(e=>e.time+e.dur)):0;
+
+  function soundParamsFor(m, program){
+    if(useInstrRecreation && gmToParams){
+      const p=gmToParams(program??0, vol);
+      return {...p, frequencyBase:Math.round(midiFreq(m))};
+    }
+    return {volume:vol,waveType,envelopeAttack:atk,envelopeSustain:.10,envelopeRelease:.12,
+      envelopePunch:0,frequencyBase:Math.round(midiFreq(m)),frequencyLimit:30,
+      frequencyRamp:0,frequencyDeltaRamp:0,vibratoStrength:vibratoStr,vibratoSpeed:vibratoSpd,
+      pitchJumpMod:0,pitchJumpSpeed:0,dutyCycle:.5,dutyCycleRamp:0,
+      repeatSpeed:0,flangerFrequency:0,flangerDepth:0,
+      lowPassFilterFrequency:lpfFreq,highPassFilterFrequency:0,
+      reverbDelay,reverbDecayFactor:reverbDecay};
+  }
+
+  const instrGroups = groupEventsForPrefab(events, pitchProgramMap, useInstrRecreation);
+
+  // Flatten into an ordered plan of ≤4-pitch parts, tagged with a label
+  // and (if instrument recreation is on) which GM program they belong to.
+  const partsPlan=[];
+  for(const g of instrGroups){
+    const pitchesInGroup=[...new Set(g.events.map(e=>e.midi))].sort((a,b)=>a-b);
+    if(pitchesInGroup.length===0) continue;
+    const chunks=chunkArray(pitchesInGroup, PREFAB_MAX_PITCHES_PER_PART);
+    chunks.forEach((chunkPitches,ci)=>{
+      const chunkSet=new Set(chunkPitches);
+      const chunkEvents=g.events.filter(e=>chunkSet.has(e.midi));
+      partsPlan.push({
+        label: chunks.length>1 ? `${g.name} ${ci+1}/${chunks.length}` : g.name,
+        program:g.program, pitches:chunkPitches, events:chunkEvents
+      });
+    });
+  }
+
+  const nodes=[];
+  const partsMeta=[];
+  const CS_HOLD=0.10, CS_AWAY=2.5, CS_HIT=-0.15;
+  const PART_SPACING_X = 10, PARTS_PER_ROW = 8, ROW_SPACING_Z = 10;
+  const rowCount = Math.max(1, Math.ceil(partsPlan.length/PARTS_PER_ROW));
+  const colCountForRow = Math.min(partsPlan.length, PARTS_PER_ROW) || 1;
+
+  partsPlan.forEach((part, partIdx)=>{
+    const base = PREFAB_ID_BASE + partIdx*PREFAB_ID_BLOCK;
+    const P = part.pitches.length;
+    const pitchIntervals = mergePitchIntervals(part.events, useExactLength?0.01:0.02);
+
+    const col = partIdx % PARTS_PER_ROW, row = Math.floor(partIdx/PARTS_PER_ROW);
+    const groupPos = {x:(col-(colCountForRow-1)/2)*PART_SPACING_X, y:2, z:-row*ROW_SPACING_Z};
+
+    const localX = m => (part.pitches.indexOf(m)-(P-1)/2)*1.4;
+    const totalXSpan = Math.max(2,(P-1)*1.4+2);
+
+    const children=[
+      { objectID: base+P, levelNodeStatic:{
+        shape:1000, position:{x:0,y:0,z:0}, scale:{x:totalXSpan,y:1.2,z:1.2},
+        rotation:{x:0,y:0,z:0,w:1}, material:8,
+        isNeon:false, isTransparent:true, isGrabbable:false, isGrapplable:false,
+        isPassable:false, isAdditive:false, specularBrightness:0
+      }}
+    ];
+
+    part.pitches.forEach((m,i)=>{
+      const soundId=base+i, triggerId=base+P+1+i, x=localX(m);
+
+      children.push({
+        objectID:soundId,
+        levelNodeSound:{
+          position:{x,y:0.05,z:0}, rotation:{x:0,y:0,z:0,w:1}, scale:{x:1,y:1,z:1},
+          startActive:false, parameters:soundParamsFor(m, part.program),
+          volume:vol, maxRangeFactor:1000, repeat:!!useExactLength,
+          name:`prefab_${(part.label||'part').replace(/[^\w]/g,'_')}_${noteName(m).replace('#','s')}`
+        }
+      });
+
+      const intervals = pitchIntervals.get(m) || [];
+      const frames=[{time:0,position:{x,y:0,z:CS_AWAY},rotation:{x:0,y:0,z:0,w:1}}];
+      for(const seg of intervals){
+        const t0=Math.max(0,seg.start-CS_HOLD);
+        const t1=seg.start;
+        const t2=useExactLength?Math.max(seg.end,seg.start+CS_HOLD):seg.start+CS_HOLD;
+        frames.push(
+          {time:t0,position:{x,y:0,z:CS_AWAY},rotation:{x:0,y:0,z:0,w:1}},
+          {time:t1,position:{x,y:0,z:CS_AWAY},rotation:{x:0,y:0,z:0,w:1}},
+          {time:t1,position:{x,y:0,z:CS_HIT}, rotation:{x:0,y:0,z:0,w:1}},
+          {time:t2,position:{x,y:0,z:CS_HIT}, rotation:{x:0,y:0,z:0,w:1}},
+          {time:t2,position:{x,y:0,z:CS_AWAY},rotation:{x:0,y:0,z:0,w:1}}
+        );
+      }
+      frames.push({time:songDuration+1,position:{x,y:0,z:CS_AWAY},rotation:{x:0,y:0,z:0,w:1}});
+
+      const tgts = useExactLength?[
+        {triggerTargetSound:{objectID:soundId,mode:3,repeat:true}},
+        {triggerTargetSound:{objectID:soundId,repeat:true},mode:1}
+      ]:[{triggerTargetSound:{objectID:soundId,mode:1}}];
+
+      const trig={
+        objectID:triggerId,
+        animations:[{name:`pt_${i}`,speed:1,currentFrameIndex:0,frames}],
+        activeAnimation:0,
+        levelNodeTrigger:{
+          shape:1000, position:{x,y:0,z:CS_AWAY}, scale:{x:1.1,y:1.1,z:1.1},
+          rotation:{x:0,y:0,z:0,w:1},
+          isShared:true, // wildcard source: no objectID reference, so this
+                          // part never depends on any other part's numbering
+          triggerSources:[{triggerSourceBasic:{type:4}}],
+          triggerTargets:tgts
+        }
+      };
+      if(useExactLength) trig.levelNodeTrigger.triggerExitTargets=[{triggerTargetSound:{objectID:soundId,mode:0}}];
+      children.push(trig);
+    });
+
+    nodes.push({ levelNodeGroup:{ position:groupPos, rotation:{x:0,y:0,z:0,w:1}, scale:{x:1,y:1,z:1}, childNodes:children } });
+    partsMeta.push({label:part.label, pitches:P, complexity:calcPrefabPartComplexity(P)});
+  });
+
+  const firstX = -((colCountForRow-1)/2)*PART_SPACING_X - 6;
+  nodes.unshift({levelNodeStart:{position:{x:firstX,y:1,z:2},rotation:{x:0,y:0,z:0,w:1},radius:1.2}});
+  nodes.push({levelNodeFinish:{position:{x:firstX,y:1,z:-(rowCount-1)*ROW_SPACING_Z-2},rotation:{x:0,y:0,z:0,w:1},radius:1.2}});
+  nodes.push({levelNodeSign:{
+    position:{x:firstX,y:3,z:0}, rotation:{x:0,y:0,z:0,w:1},
+    text:`${title}\nPrefab-Friendly · ${partsMeta.length} parts\nEach part <=50 complexity\nMIDI2GRAB · By ${creator}`,
+    scale:16, isNeon:false
+  }});
+
+  const SIGN_COST=10;
+  const complexityTotal = partsMeta.reduce((s,p)=>s+p.complexity,0) + SIGN_COST;
+  const maxPartComplexity = partsMeta.length ? Math.max(...partsMeta.map(p=>p.complexity)) : 0;
+
+  return {
+    formatVersion:17, title, creators:creator,
+    description: description || `Prefab-friendly: ${partsMeta.length} self-contained parts, each <=50 complexity.`,
+    tags: tags||['innovative','showcase'],
+    maxCheckpointCount:10, fogDensity:(ambienceSettings&&ambienceSettings.fogDensity)||0,
+    ambienceSettings: ambienceSettings || {skyZenithColor:{r:.28,g:.476,b:.73,a:1},skyHorizonColor:{r:.916,g:.9574,b:.9574,a:1},sunAltitude:45,sunAzimuth:315,sunSize:.5,fogDensity:0},
+    levelNodes:nodes,
+    _prefabParts: partsMeta,
+    _complexityTotal: complexityTotal,
+    _maxPartComplexity: maxPartComplexity
+  };
+}
+
+// ═══════════════════════════════════════════════
 //  COMPLEXITY CALCULATOR
 // ═══════════════════════════════════════════════
 function calcComplexity(P, D, voiceCount, useComplexitySaver, instrPitchTotal, instrCount){
@@ -3035,11 +2937,11 @@ function calcComplexity(P, D, voiceCount, useComplexitySaver, instrPitchTotal, i
   // instrCount: number of instrument layers
   const eP = instrPitchTotal || P; // effective pitch total
   const eN = instrCount || 1;      // effective instrument count
-  const sounds = (eP + D) * 2;
+  // Sound cost is 8 per node, trigger is 3, static block is 2 (confirmed costs).
+  const sounds = (eP + D) * 8;
   let triggers, voiceNodes;
   if(useComplexitySaver){
     // CS: eP animated triggers + eN sensor blocks (one per layer)
-    // Trigger cost is 3 per the GRAB complexity rebalance (was 2/5 pre-rebalance).
     triggers   = eP * 3;
     voiceNodes = eN * 2;
   } else {
@@ -3754,10 +3656,6 @@ window.addEventListener('resize',()=>{
   const exactLenDesc=document.getElementById('exactLenDesc');
   const complexSaverCheck=document.getElementById('complexSaverCheck');
   const complexSaverDesc=document.getElementById('complexSaverDesc');
-  const complexSaverLabel=document.getElementById('complexSaverLabel');
-  const dupeLabel=document.getElementById('dupeLabel');
-  const prefabCheck=document.getElementById('prefabCheck');
-  const prefabDesc=document.getElementById('prefabDesc');
   const buildBtn=document.getElementById('buildBtn');
 
   // New metadata/processing elements
@@ -3831,16 +3729,6 @@ window.addEventListener('resize',()=>{
     complexSaverDesc.style.display=complexSaverCheck.checked?'block':'none';
     const vf=document.querySelector('.voice-field');
     if(vf) vf.style.opacity=complexSaverCheck.checked?'0.35':'1';
-  });
-  prefabCheck.addEventListener('change',()=>{
-    const on=prefabCheck.checked;
-    prefabDesc.style.display=on?'block':'none';
-    // Prefab Friendly builds its own self-contained CS-style rig per part —
-    // Complexity Saver and Same-Note-Doubling don't apply on top of it.
-    [complexSaverCheck, dupeCheck].forEach(cb=>{ cb.disabled=on; });
-    [complexSaverLabel, dupeLabel].forEach(lb=>{ if(lb){ lb.style.opacity=on?'0.4':'1'; lb.style.cursor=on?'not-allowed':'pointer'; } });
-    const vf=document.querySelector('.voice-field');
-    if(vf) vf.style.opacity=on?'0.35':(complexSaverCheck.checked?'0.35':'1');
   });
 
   // ── GM Instrument → GRAB sound params map ────────────────────────────────
@@ -4196,10 +4084,9 @@ window.addEventListener('resize',()=>{
     if(!events.length){ss(statusEl,'No notes found.','err');return;}
     const VC=getVoiceCount();
     const useInstr=instrCheck.checked;
-    const usePrefab=prefabCheck.checked;
-    const useDupe=usePrefab?false:dupeCheck.checked;
+    const useDupe=dupeCheck.checked;
     const useExactLen=exactLenCheck.checked;
-    const useCS=usePrefab?false:complexSaverCheck.checked;
+    const useCS=complexSaverCheck.checked;
 
     const tags=[];
     if(document.getElementById('tagInnovative')?.checked) tags.push('innovative');
@@ -4234,7 +4121,6 @@ window.addEventListener('resize',()=>{
       lpfFreq:+lpfFreqEl?.value||10000,
       useInstrRecreation:useInstr, pitchProgramMap:pitchProgram, gmToParams,
       useDupeNotes:useDupe, useExactLength:useExactLen, useComplexitySaver:useCS,
-      usePrefabFriendly:usePrefab,
       layout, offsetX, offsetY, offsetZ, blockMaterial:blockMat, blockScale:blockSc, blockNeon,
       mirrorLayout:!!document.getElementById('mirrorLayoutCheck')?.checked,
       addSpawnPlatform:!!document.getElementById('spawnPlatformCheck')?.checked,
@@ -4261,48 +4147,25 @@ window.addEventListener('resize',()=>{
     const s=minify?JSON.stringify(json):JSON.stringify(json,null,2);
     codeBox.textContent=s.slice(0,8000)+(s.length>8000?'\n\n// ...truncated':'');
     const P=pitches.length;
+    const _miTotalB=json._instrGuide?json._instrGuide.reduce((s,g)=>s+g.uniquePitches,0):P;
+    const _miCountB=json._instrGuide?json._instrGuide.length:1;
+    const {total}=calcComplexity(P,0,VC,useCS,_miTotalB,_miCountB);
+    const instrNote=useInstr
+      ? ' · ' + (json._instrGuide
+          ? json._instrGuide.map(g=>`${g.name}→${g.preset}`).join(', ')
+          : 'instrument recreation on')
+      : '';
+    const dupeNote=useDupe?' · dupe notes on':'';
+    const csNote=useCS?' · complexity saver on':'';
+    const nodeDesc=useCS?`${P} animated triggers + 1 sensor block`:`${VC} animated blocks`;
+    ss(statusEl,`✓ ${P} sounds + ${P} triggers + ${nodeDesc}. ${json.levelNodes.length} total nodes. Complexity: ${total}.${instrNote}${dupeNote}${csNote}`,'ok');
+    ss(expStatusEl,`${(s.length/1024).toFixed(1)} KB · ${json.levelNodes.length} nodes · complexity ${total}`,'ok');
     dlBtn.disabled=false;cpBtn.disabled=false;
     if(dlLevelBtn) dlLevelBtn.disabled=false;
     const forumBtn=document.getElementById('forumPostBtn'); if(forumBtn) forumBtn.disabled=false;
-
-    if(usePrefab && json._prefabTotals){
-      const {parts, totalComplexity, maxPartComplexity, maxPitchesPerPart} = json._prefabTotals;
-      const panel=document.getElementById('complexityPanel');
-      if(panel){
-        panel.style.display='block';
-        const valEl=document.getElementById('complexityValue');
-        const barEl=document.getElementById('complexityBar');
-        const warnEl=document.getElementById('complexityWarning');
-        const bdEl=document.getElementById('complexityBreakdown');
-        valEl.textContent=totalComplexity;
-        valEl.className='complexity-val'+(totalComplexity>1800?' danger':totalComplexity>1400?' warn':'');
-        const pct=Math.min(100,(totalComplexity/2000)*100);
-        barEl.style.width=pct+'%';
-        barEl.style.background=totalComplexity>1800?'var(--err)':totalComplexity>1400?'var(--warn)':'var(--a)';
-        warnEl.style.display=totalComplexity>1800?'inline-flex':'none';
-        bdEl.textContent=`${parts} self-contained parts · ${maxPartComplexity}/50 max per part (${maxPitchesPerPart} pitches/part cap) · ${totalComplexity} total`;
-      }
-      const instrNote=useInstr && json._prefabGuide
-        ? ' · instruments: ' + [...new Set(json._prefabGuide.map(g=>g.instrument))].join(', ')
-        : '';
-      ss(statusEl,`✓ ${parts} prefab-friendly parts, every part ≤50 complexity (max ${maxPartComplexity}). ${json.levelNodes.length} total nodes, ${totalComplexity} total complexity.${instrNote} Pull any part out on its own — it stays in sync.`,'ok');
-      ss(expStatusEl,`${(s.length/1024).toFixed(1)} KB · ${json.levelNodes.length} nodes · ${parts} parts · max ${maxPartComplexity}/50`,'ok');
-    } else {
-      const _miTotalB=json._instrGuide?json._instrGuide.reduce((s,g)=>s+g.uniquePitches,0):P;
-      const _miCountB=json._instrGuide?json._instrGuide.length:1;
-      const {total}=calcComplexity(P,0,VC,useCS,_miTotalB,_miCountB);
-      const instrNote=useInstr
-        ? ' · ' + (json._instrGuide
-            ? json._instrGuide.map(g=>`${g.name}→${g.preset}`).join(', ')
-            : 'instrument recreation on')
-        : '';
-      const dupeNote=useDupe?' · dupe notes on':'';
-      const csNote=useCS?' · complexity saver on':'';
-      const nodeDesc=useCS?`${P} animated triggers + 1 sensor block`:`${VC} animated blocks`;
-      ss(statusEl,`✓ ${P} sounds + ${P} triggers + ${nodeDesc}. ${json.levelNodes.length} total nodes. Complexity: ${total}.${instrNote}${dupeNote}${csNote}`,'ok');
-      ss(expStatusEl,`${(s.length/1024).toFixed(1)} KB · ${json.levelNodes.length} nodes · complexity ${total}`,'ok');
-      updateComplexityDisplay(P,0,VC,useCS,_miTotalB,_miCountB);
-    }
+    updateComplexityDisplay(P,0,VC,useCS,
+      json._instrGuide?json._instrGuide.reduce((s,g)=>s+g.uniquePitches,0):P,
+      json._instrGuide?json._instrGuide.length:1);
     runValidator(json, events, pitches);
     pushBuildHistory(json, events);
     renderLevelSummary(json, events, total);
