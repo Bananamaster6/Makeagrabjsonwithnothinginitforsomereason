@@ -3308,14 +3308,24 @@ function runValidator(json, events, pitches){
   const P=pitches.length, N=json.levelNodes?.length||0;
   const dur=events.length?Math.max(...events.map(e=>e.time+e.dur)):0;
   const useCS=document.getElementById('complexSaverCheck')?.checked||false;
-  const {total}=calcComplexity(P,0,+(document.getElementById('voiceNum')?.value||15),useCS);
+  const total=(json && typeof json._complexityTotal==='number') ? json._complexityTotal : calcComplexity(P,0,+(document.getElementById('voiceNum')?.value||15),useCS).total;
 
   if(P===0){ add('err','✖','No notes found — check your MIDI file and track selection.'); return; }
-  add('ok','✔',`${P} unique pitches · ${events.length} note events · ${N} level nodes`);
-  if(total<=1000) add('ok','✔',`Complexity ${total}/2000 — well within limit`);
-  else if(total<=1600) add('info','ℹ',`Complexity ${total}/2000 — moderate. Enable Complexity Saver if you plan to add more nodes later.`);
-  else if(total<=1900) add('warn','⚠',`Complexity ${total}/2000 — getting close. Consider enabling Complexity Saver or reducing voices.`);
-  else add('err','✖',`Complexity ${total}/2000 — OVER limit! GRAB will refuse to load this level. Enable Complexity Saver immediately.`);
+
+  if(json && Array.isArray(json._prefabParts)){
+    const parts=json._prefabParts;
+    const over=parts.filter(p=>p.complexity>50);
+    add('ok','✔',`${P} unique pitches · ${events.length} note events · ${parts.length} prefab parts · ${N} level nodes`);
+    if(over.length===0) add('ok','✔',`All ${parts.length} parts are ≤50 complexity (largest: ${Math.max(...parts.map(p=>p.complexity))}) — every part is safely prefab-sized.`);
+    else add('err','✖',`${over.length} part(s) exceed 50 complexity: ${over.map(p=>`${p.label} (${p.complexity})`).join(', ')}`);
+    add('info','ℹ',`Total level complexity ${total}/2000. Each part's trigger uses a wildcard source (no external ID), so parts can be extracted/reordered freely.`);
+  } else {
+    if(total<=1000) add('ok','✔',`Complexity ${total}/2000 — well within limit`);
+    else if(total<=1600) add('info','ℹ',`Complexity ${total}/2000 — moderate. Enable Complexity Saver if you plan to add more nodes later.`);
+    else if(total<=1900) add('warn','⚠',`Complexity ${total}/2000 — getting close. Consider enabling Complexity Saver or reducing voices.`);
+    else add('err','✖',`Complexity ${total}/2000 — OVER limit! GRAB will refuse to load this level. Enable Complexity Saver immediately.`);
+    add('ok','✔',`${P} unique pitches · ${events.length} note events · ${N} level nodes`);
+  }
   if(dur>180) add('warn','⚠',`Song is ${dur.toFixed(0)}s (${(dur/60).toFixed(1)} min) — very long levels may lag in GRAB. Consider using Loop Count=1 and BPM Scale to shorten.`);
   else if(dur>90) add('info','ℹ',`Song duration: ${dur.toFixed(0)}s — ${(dur/60).toFixed(1)} min. Works fine, but longer songs use more animation memory.`);
   else add('ok','✔',`Duration ${dur.toFixed(1)}s — good length for a GRAB music level`);
@@ -3656,6 +3666,8 @@ window.addEventListener('resize',()=>{
   const exactLenDesc=document.getElementById('exactLenDesc');
   const complexSaverCheck=document.getElementById('complexSaverCheck');
   const complexSaverDesc=document.getElementById('complexSaverDesc');
+  const prefabCheck=document.getElementById('prefabCheck');
+  const prefabDesc=document.getElementById('prefabDesc');
   const buildBtn=document.getElementById('buildBtn');
 
   // New metadata/processing elements
@@ -3729,6 +3741,18 @@ window.addEventListener('resize',()=>{
     complexSaverDesc.style.display=complexSaverCheck.checked?'block':'none';
     const vf=document.querySelector('.voice-field');
     if(vf) vf.style.opacity=complexSaverCheck.checked?'0.35':'1';
+  });
+  prefabCheck.addEventListener('change',()=>{
+    const on=prefabCheck.checked;
+    prefabDesc.style.display=on?'block':'none';
+    // Prefab Friendly builds its own per-part trigger/sensor pattern and
+    // doesn't use the shared voice-block pool or dupe-note logic, so these
+    // are visually dimmed (not disabled outright — harmless if left checked,
+    // simply unused) to avoid implying they still apply.
+    [complexSaverCheck, dupeCheck].forEach(cb=>{ cb.disabled=on; });
+    [complexSaverCheck.closest('label'), dupeCheck.closest('label')].forEach(l=>{ if(l) l.style.opacity=on?'0.4':'1'; });
+    const vf=document.querySelector('.voice-field');
+    if(vf) vf.style.opacity=on?'0.35':(complexSaverCheck.checked?'0.35':'1');
   });
 
   // ── GM Instrument → GRAB sound params map ────────────────────────────────
@@ -4087,6 +4111,7 @@ window.addEventListener('resize',()=>{
     const useDupe=dupeCheck.checked;
     const useExactLen=exactLenCheck.checked;
     const useCS=complexSaverCheck.checked;
+    const usePrefab=prefabCheck.checked;
 
     const tags=[];
     if(document.getElementById('tagInnovative')?.checked) tags.push('innovative');
@@ -4107,65 +4132,103 @@ window.addEventListener('resize',()=>{
     const blockSc=+document.getElementById('blockScale')?.value||0.8;
     const blockNeon=document.getElementById('blockNeonCheck')?.checked!==false;
 
-    const json=buildLevelJSON({
-      events,voiceCount:VC,
-      spacing:+spacingEl.value||3,
-      vol:+volEl.value||.8,
-      atk:+atkEl.value||.01,
-      wave:+waveSel.value,
-      title:levelTitle, creator:levelCreator, description:levelDesc,
-      tags:tags.length?tags:['innovative','showcase'],
-      ambienceSettings:ambience,
-      reverbDelay:+reverbDelayEl?.value||0, reverbDecay:+reverbDecayEl?.value||0,
-      vibratoStr:+vibratoStrEl?.value||0, vibratoSpd:+vibratoSpdEl?.value||0,
-      lpfFreq:+lpfFreqEl?.value||10000,
-      useInstrRecreation:useInstr, pitchProgramMap:pitchProgram, gmToParams,
-      useDupeNotes:useDupe, useExactLength:useExactLen, useComplexitySaver:useCS,
-      layout, offsetX, offsetY, offsetZ, blockMaterial:blockMat, blockScale:blockSc, blockNeon,
-      mirrorLayout:!!document.getElementById('mirrorLayoutCheck')?.checked,
-      addSpawnPlatform:!!document.getElementById('spawnPlatformCheck')?.checked,
-      addFinishSign:!!document.getElementById('finishSignCheck')?.checked,
-      showReplays:document.getElementById('showReplaysCheck')?.checked!==false,
-      soundRangeFactor:parseFloat(document.getElementById('soundRangeFactor')?.value||1000),
-      maxCheckpointCount:parseInt(document.getElementById('maxCheckpointCount')?.value||10,10),
-      envPunch:parseFloat(document.getElementById('envPunchInput')?.value||0),
-      freqRamp:parseFloat(document.getElementById('freqRampInput')?.value||0),
-      stereoSpread:parseFloat(document.getElementById('stereoSpreadInput')?.value||0),
-      pitchJump:!!document.getElementById('pitchJumpCheck')?.checked,
-      pitchJumpStr:parseFloat(document.getElementById('pitchJumpStrInput')?.value||0.8),
-      pitchJumpSpd:parseFloat(document.getElementById('pitchJumpSpdInput')?.value||450),
-      tremolo:!!document.getElementById('tremoloCheck')?.checked,
-      tremoloSpd:parseFloat(document.getElementById('tremoloSpdInput')?.value||10),
-      waveMotion:!!document.getElementById('waveMotionCheck')?.checked,
-      waveAmp:parseFloat(document.getElementById('waveAmpInput')?.value||0.25),
-      waveFreq:parseFloat(document.getElementById('waveFreqInput')?.value||1.0),
-      velTriggerSize:!!document.getElementById('velTriggerSizeCheck')?.checked
-    });
+    // Safe complexity-total reader: prefers the value the builder itself
+    // attached to the JSON (always present for prefab mode), otherwise
+    // falls back to the normal calcComplexity(...) call. This guarantees
+    // `total` is a real number in every branch below — never undefined.
+    function safeTotal(json, fallbackTotal){
+      return (json && typeof json._complexityTotal==='number') ? json._complexityTotal : (fallbackTotal ?? 0);
+    }
+
+    let json, total, P=pitches.length, statusMsg, expMsg;
+
+    if(usePrefab){
+      json = buildPrefabFriendlyJSON({
+        events, title:levelTitle, creator:levelCreator, description:levelDesc,
+        tags:tags.length?tags:['innovative','showcase'], ambienceSettings:ambience,
+        vol:+volEl.value||.8, atk:+atkEl.value||.01, wave:+waveSel.value,
+        reverbDelay:+reverbDelayEl?.value||0, reverbDecay:+reverbDecayEl?.value||0,
+        vibratoStr:+vibratoStrEl?.value||0, vibratoSpd:+vibratoSpdEl?.value||0,
+        lpfFreq:+lpfFreqEl?.value||10000,
+        useInstrRecreation:useInstr, pitchProgramMap:pitchProgram, gmToParams,
+        useExactLength:useExactLen
+      });
+      total = safeTotal(json, 0);
+      const parts = json._prefabParts||[];
+      const maxPC = json._maxPartComplexity||0;
+      const allOk = parts.every(p=>p.complexity<=50);
+      const instrNote = useInstr ? ' · chunked per instrument' : ' · chunked by pitch';
+      statusMsg = `✓ Prefab Friendly: ${parts.length} self-contained parts${instrNote}. Largest part = ${maxPC} complexity (${allOk?'all ≤50 ✓':'⚠ check parts'}). ${json.levelNodes.length} total nodes. Complexity: ${total}.`;
+      expMsg = `${parts.length} parts · max ${maxPC}/50 per part · complexity ${total}`;
+    } else {
+      json=buildLevelJSON({
+        events,voiceCount:VC,
+        spacing:+spacingEl.value||3,
+        vol:+volEl.value||.8,
+        atk:+atkEl.value||.01,
+        wave:+waveSel.value,
+        title:levelTitle, creator:levelCreator, description:levelDesc,
+        tags:tags.length?tags:['innovative','showcase'],
+        ambienceSettings:ambience,
+        reverbDelay:+reverbDelayEl?.value||0, reverbDecay:+reverbDecayEl?.value||0,
+        vibratoStr:+vibratoStrEl?.value||0, vibratoSpd:+vibratoSpdEl?.value||0,
+        lpfFreq:+lpfFreqEl?.value||10000,
+        useInstrRecreation:useInstr, pitchProgramMap:pitchProgram, gmToParams,
+        useDupeNotes:useDupe, useExactLength:useExactLen, useComplexitySaver:useCS,
+        layout, offsetX, offsetY, offsetZ, blockMaterial:blockMat, blockScale:blockSc, blockNeon,
+        mirrorLayout:!!document.getElementById('mirrorLayoutCheck')?.checked,
+        addSpawnPlatform:!!document.getElementById('spawnPlatformCheck')?.checked,
+        addFinishSign:!!document.getElementById('finishSignCheck')?.checked,
+        showReplays:document.getElementById('showReplaysCheck')?.checked!==false,
+        soundRangeFactor:parseFloat(document.getElementById('soundRangeFactor')?.value||1000),
+        maxCheckpointCount:parseInt(document.getElementById('maxCheckpointCount')?.value||10,10),
+        envPunch:parseFloat(document.getElementById('envPunchInput')?.value||0),
+        freqRamp:parseFloat(document.getElementById('freqRampInput')?.value||0),
+        stereoSpread:parseFloat(document.getElementById('stereoSpreadInput')?.value||0),
+        pitchJump:!!document.getElementById('pitchJumpCheck')?.checked,
+        pitchJumpStr:parseFloat(document.getElementById('pitchJumpStrInput')?.value||0.8),
+        pitchJumpSpd:parseFloat(document.getElementById('pitchJumpSpdInput')?.value||450),
+        tremolo:!!document.getElementById('tremoloCheck')?.checked,
+        tremoloSpd:parseFloat(document.getElementById('tremoloSpdInput')?.value||10),
+        waveMotion:!!document.getElementById('waveMotionCheck')?.checked,
+        waveAmp:parseFloat(document.getElementById('waveAmpInput')?.value||0.25),
+        waveFreq:parseFloat(document.getElementById('waveFreqInput')?.value||1.0),
+        velTriggerSize:!!document.getElementById('velTriggerSizeCheck')?.checked
+      });
+      const _miTotalB=json._instrGuide?json._instrGuide.reduce((s,g)=>s+g.uniquePitches,0):P;
+      const _miCountB=json._instrGuide?json._instrGuide.length:1;
+      total = safeTotal(json, calcComplexity(P,0,VC,useCS,_miTotalB,_miCountB).total);
+      const instrNote=useInstr
+        ? ' · ' + (json._instrGuide
+            ? json._instrGuide.map(g=>`${g.name}→${g.preset}`).join(', ')
+            : 'instrument recreation on')
+        : '';
+      const dupeNote=useDupe?' · dupe notes on':'';
+      const csNote=useCS?' · complexity saver on':'';
+      const nodeDesc=useCS?`${P} animated triggers + 1 sensor block`:`${VC} animated blocks`;
+      statusMsg = `✓ ${P} sounds + ${P} triggers + ${nodeDesc}. ${json.levelNodes.length} total nodes. Complexity: ${total}.${instrNote}${dupeNote}${csNote}`;
+    }
+
     levelJson=json;
     window._m2g._lastBuiltJson=json;
     const minify=document.getElementById('minifyJson')?.checked;
     const s=minify?JSON.stringify(json):JSON.stringify(json,null,2);
     codeBox.textContent=s.slice(0,8000)+(s.length>8000?'\n\n// ...truncated':'');
-    const P=pitches.length;
-    const _miTotalB=json._instrGuide?json._instrGuide.reduce((s,g)=>s+g.uniquePitches,0):P;
-    const _miCountB=json._instrGuide?json._instrGuide.length:1;
-    const {total}=calcComplexity(P,0,VC,useCS,_miTotalB,_miCountB);
-    const instrNote=useInstr
-      ? ' · ' + (json._instrGuide
-          ? json._instrGuide.map(g=>`${g.name}→${g.preset}`).join(', ')
-          : 'instrument recreation on')
-      : '';
-    const dupeNote=useDupe?' · dupe notes on':'';
-    const csNote=useCS?' · complexity saver on':'';
-    const nodeDesc=useCS?`${P} animated triggers + 1 sensor block`:`${VC} animated blocks`;
-    ss(statusEl,`✓ ${P} sounds + ${P} triggers + ${nodeDesc}. ${json.levelNodes.length} total nodes. Complexity: ${total}.${instrNote}${dupeNote}${csNote}`,'ok');
-    ss(expStatusEl,`${(s.length/1024).toFixed(1)} KB · ${json.levelNodes.length} nodes · complexity ${total}`,'ok');
+    if(usePrefab){
+      ss(statusEl,statusMsg,'ok');
+      ss(expStatusEl,`${(s.length/1024).toFixed(1)} KB · ${json.levelNodes.length} nodes · ${expMsg}`,'ok');
+    } else {
+      ss(statusEl,statusMsg,'ok');
+      ss(expStatusEl,`${(s.length/1024).toFixed(1)} KB · ${json.levelNodes.length} nodes · complexity ${total}`,'ok');
+    }
     dlBtn.disabled=false;cpBtn.disabled=false;
     if(dlLevelBtn) dlLevelBtn.disabled=false;
     const forumBtn=document.getElementById('forumPostBtn'); if(forumBtn) forumBtn.disabled=false;
-    updateComplexityDisplay(P,0,VC,useCS,
-      json._instrGuide?json._instrGuide.reduce((s,g)=>s+g.uniquePitches,0):P,
-      json._instrGuide?json._instrGuide.length:1);
+    if(!usePrefab){
+      updateComplexityDisplay(P,0,VC,useCS,
+        json._instrGuide?json._instrGuide.reduce((s,g)=>s+g.uniquePitches,0):P,
+        json._instrGuide?json._instrGuide.length:1);
+    }
     runValidator(json, events, pitches);
     pushBuildHistory(json, events);
     renderLevelSummary(json, events, total);
@@ -6110,11 +6173,12 @@ function settingsImport(file){
 // ═══════════════════════════════════════════════
 const _buildHistory=[];
 function pushBuildHistory(json, events){
-  const {total}=calcComplexity(
+  const fallback=calcComplexity(
     [...new Set(events.map(e=>e.midi))].length, 0,
     +(document.getElementById('voiceNum')?.value||15),
     document.getElementById('complexSaverCheck')?.checked
-  );
+  ).total;
+  const total=(json && typeof json._complexityTotal==='number') ? json._complexityTotal : fallback;
   _buildHistory.unshift({title:json.title||'midi_level', time:new Date(), nodes:json.levelNodes?.length||0, complexity:total, json});
   if(_buildHistory.length>8) _buildHistory.pop();
   renderBuildHistory();
@@ -6442,7 +6506,7 @@ function generateForumPost(json, events){
   const dur=events.length?Math.max(...events.map(e=>e.time+e.dur)):0;
   const useCS=document.getElementById('complexSaverCheck')?.checked||false;
   const VC=+(document.getElementById('voiceNum')?.value||15);
-  const {total}=calcComplexity(pitches.length,0,VC,useCS);
+  const total=(json && typeof json._complexityTotal==='number') ? json._complexityTotal : calcComplexity(pitches.length,0,VC,useCS).total;
   const bpmEl=document.getElementById('sBpm');
   const bpm=bpmEl?.textContent?.replace(/[^\d]/g,'')||'?';
   const lo=NOTE_NAMES[pitches[0]%12]+(Math.floor(pitches[0]/12)-1);
