@@ -276,49 +276,6 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 .expand-hdr.noteproc{border-color:rgba(155,127,255,.18);background:rgba(155,127,255,.03)}
 .expand-hdr.advsnd .exp-title{color:#61d9ff}
 .expand-hdr.advsnd{border-color:rgba(97,217,255,.18);background:rgba(97,217,255,.03)}
-.expand-hdr.instr .exp-title{color:#ff6ec7}
-.expand-hdr.instr{border-color:rgba(255,110,199,.2);background:rgba(255,110,199,.04)}
-
-/* ── Instrument Rack ── */
-.instr-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 11px;border-radius:10px;border:1px solid rgba(255,110,199,.15);background:rgba(255,110,199,.03)}
-.instr-remix-btn{padding:8px 15px;border-radius:9px;font-size:12px;font-weight:700;border:1px solid rgba(255,110,199,.35);background:linear-gradient(135deg,rgba(255,110,199,.15),rgba(255,179,71,.1));color:#ff6ec7;cursor:pointer;transition:all .15s}
-.instr-remix-btn:hover{border-color:rgba(255,110,199,.6);box-shadow:0 0 16px rgba(255,110,199,.15)}
-.instr-remix-sel{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:7px 10px;font-size:11px;color:var(--t);outline:none;cursor:pointer}
-.instr-revert-btn{padding:7px 13px;border-radius:8px;font-size:11px;font-weight:600;border:1px solid var(--b);background:rgba(255,255,255,.03);color:var(--m);cursor:pointer;transition:all .15s}
-.instr-revert-btn:hover{color:var(--t);border-color:var(--b2)}
-.instr-rack-status{font-size:10px;color:var(--m);font-family:var(--mono);flex:1;min-width:120px}
-
-.instr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-.instr-card{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:11px 12px;display:flex;flex-direction:column;gap:9px;transition:all .15s}
-.instr-card.muted{opacity:.45}
-.instr-card.solo{border-color:rgba(61,252,190,.4);box-shadow:0 0 0 1px rgba(61,252,190,.15)}
-.instr-card-hdr{display:flex;align-items:center;gap:8px}
-.instr-icon{font-size:20px;flex-shrink:0}
-.instr-title-block{flex:1;min-width:0}
-.instr-name{font-size:12.5px;font-weight:700;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.instr-meta{font-size:9.5px;color:var(--m);font-family:var(--mono)}
-.instr-mini-btn{width:26px;height:26px;flex-shrink:0;border-radius:7px;border:1px solid var(--b);background:rgba(255,255,255,.02);color:var(--m);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.instr-mini-btn:hover{border-color:var(--b2);color:var(--t)}
-.instr-mini-btn.active[data-act="mute"]{background:rgba(255,80,96,.15);border-color:rgba(255,80,96,.4);color:var(--err)}
-.instr-mini-btn.active[data-act="solo"]{background:rgba(61,252,190,.15);border-color:rgba(61,252,190,.4);color:var(--a)}
-.instr-row{display:flex;flex-direction:column;gap:4px}
-.instr-row label{display:flex;justify-content:space-between;font-size:10px;color:var(--m);font-family:var(--mono)}
-.instr-val{color:#ff6ec7;font-weight:700}
-.instr-preset-select{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:7px;padding:6px 8px;font-size:11px;color:var(--t);outline:none;cursor:pointer}
-.instr-preset-select:focus{border-color:rgba(255,110,199,.4)}
-.instr-fixed-badge{font-size:10px;color:var(--m);font-family:var(--mono);padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.02);border:1px solid var(--b)}
-.instr-slider{width:100%;accent-color:#ff6ec7;cursor:pointer}
-.instr-btn-row{display:flex;gap:5px;flex-wrap:wrap}
-.instr-btn{flex:1;min-width:50px;padding:6px 5px;border-radius:7px;font-size:10px;font-weight:600;border:1px solid var(--b);background:rgba(255,255,255,.02);color:var(--m);cursor:pointer;transition:all .15s}
-.instr-btn:hover{color:var(--t);border-color:var(--b2)}
-.instr-adv-body{display:flex;flex-direction:column;gap:6px;padding-top:6px;border-top:1px solid var(--b)}
-.instr-adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.instr-adv-field{background:var(--s2);border:1px solid var(--b);border-radius:6px;padding:5px 7px}
-.instr-adv-field label{display:block;font-size:8.5px;color:var(--m);font-family:var(--mono);margin-bottom:2px}
-.instr-adv-field input,.instr-adv-field select{width:100%;background:transparent;border:none;padding:0;font-size:11px;font-family:var(--mono);color:#ff6ec7;outline:none}
-.instr-my-lib{display:flex;flex-wrap:wrap;gap:5px;padding:8px 0 0}
-.instr-my-chip{padding:4px 10px;border-radius:14px;font-size:10px;border:1px solid rgba(255,110,199,.25);background:rgba(255,110,199,.05);color:#ff6ec7;cursor:pointer}
-.instr-my-chip:hover{background:rgba(255,110,199,.12)}
 
 /* ── Ambience swatch ── */
 .amb-swatch{height:48px;border-radius:8px;border:1px solid var(--b);margin-bottom:2px;overflow:hidden;position:relative;cursor:default}
@@ -1282,34 +1239,6 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
       <canvas id="miniPianoCanvas" height="48" class="mini-piano-canvas"></canvas>
       <div style="font-size:9px;color:var(--m);font-family:var(--mono);margin-top:3px;text-align:center" id="miniPianoLabel"></div>
     </div>
-
-    <div id="instrRackWrap" style="display:none;padding:0 16px 16px">
-      <div class="expand-hdr instr open" id="instrRackHdr" tabindex="0">
-        <span style="font-size:15px">🎛</span>
-        <span class="exp-title">Instrument Rack</span>
-        <span style="font-size:11px;color:var(--m);margin-left:4px" id="instrCountBadge"></span>
-        <span class="exp-icon">▼</span>
-      </div>
-      <div class="expand-body open" id="instrRackBody">
-        <div class="instr-toolbar">
-          <button class="instr-remix-btn" id="remixBtn">🎲 Remix Instruments</button>
-          <select class="instr-remix-sel" id="remixStyleSel">
-            <option value="random">🎲 Random</option>
-            <option value="chiptune">🕹 Chiptune</option>
-            <option value="orchestral">🎻 Orchestral</option>
-            <option value="ambient">🌊 Ambient</option>
-            <option value="electric">🤘 Electric</option>
-          </select>
-          <button class="instr-revert-btn" id="revertRemixBtn">↺ Revert to Original</button>
-          <span class="instr-rack-status" id="instrRackStatus"></span>
-        </div>
-        <div class="instr-grid" id="instrGrid"></div>
-        <div id="instrMyLibWrap" style="display:none">
-          <div style="font-size:10px;color:var(--m);font-family:var(--mono);letter-spacing:.05em;padding-top:8px">💾 MY SAVED INSTRUMENTS <span style="color:var(--m2)">— click a card's preset dropdown, or drag isn't supported yet; use Advanced → Load to apply</span></div>
-          <div class="instr-my-lib" id="instrMyLib"></div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 </div>
@@ -1857,118 +1786,6 @@ function canonicalizeDrumNote(midiNote){
     return 48;
   }
   return DRUM_TYPE_CANONICAL[type] || midiNote;
-}
-
-// ═══════════════════════════════════════════════
-//  INSTRUMENT RACK — global state, preset overriding,
-//  custom instrument library, and full synth preview.
-// ═══════════════════════════════════════════════
-window._m2g = window._m2g || {};
-window._m2g._instrumentOverrides = window._m2g._instrumentOverrides || {};
-
-const INSTR_PRESET_LABELS = {
-  piano:'🎹 Piano', organ:'🎹 Organ', guitar:'🎸 Guitar', bass:'🎸 Bass',
-  strings:'🎻 Strings', choir:'🎤 Choir', brass:'🎺 Brass', woodwind:'🎷 Woodwind',
-  flute:'🪈 Flute', bell:'🔔 Bell', synth_lead:'🎛 Synth Lead', pad:'🌫 Pad'
-};
-const INSTR_ICONS = {piano:'🎹',organ:'🎹',guitar:'🎸',bass:'🎸',strings:'🎻',choir:'🎤',brass:'🎺',woodwind:'🎷',flute:'🪈',bell:'🔔',synth_lead:'🎛',pad:'🌫'};
-
-function instrGroupKey(program, isDrum){ return isDrum ? '__drums__' : 'p'+(program??0); }
-
-function getInstrOverride(key){
-  if(!window._m2g._instrumentOverrides[key]) window._m2g._instrumentOverrides[key]={muted:false,solo:false,presetOverride:null,customParams:null,volumeMult:1.0,transpose:0};
-  return window._m2g._instrumentOverrides[key];
-}
-
-// Wrap matchPresetForGM so Rack overrides take priority, while keeping the
-// original around (as _origMatchPresetForGM) for "what would auto-detect"
-// display purposes and as the fallback when no override is set. Custom
-// full-parameter overrides are registered as synthetic preset keys directly
-// into GRAB_SOUND_REF_PRESETS, so every existing downstream lookup (both
-// buildLevelJSON's fallback path and buildMultiInstrumentJSON's layer
-// system) picks them up automatically with zero changes to either.
-const _origMatchPresetForGM = matchPresetForGM;
-matchPresetForGM = function(gmName, gmProgram, isDrum){
-  const key = instrGroupKey(isDrum ? -1 : gmProgram, isDrum);
-  const ov = window._m2g._instrumentOverrides[key];
-  if(ov){
-    if(ov.customParams){
-      const synthKey = 'custom_'+key;
-      GRAB_SOUND_REF_PRESETS[synthKey] = ov.customParams;
-      return synthKey;
-    }
-    if(ov.presetOverride) return ov.presetOverride;
-  }
-  return _origMatchPresetForGM(gmName, gmProgram, isDrum);
-};
-
-// ── Custom instrument library (localStorage) ────────────────────────────
-function loadCustomInstrumentLibrary(){
-  try{ return JSON.parse(localStorage.getItem('m2g_custom_instruments')||'{}'); }catch{ return {}; }
-}
-function saveCustomInstrumentToLibrary(name, params){
-  const lib=loadCustomInstrumentLibrary();
-  lib[name]={params, saved:Date.now()};
-  try{ localStorage.setItem('m2g_custom_instruments', JSON.stringify(lib)); }catch{}
-}
-function deleteCustomInstrumentFromLibrary(name){
-  const lib=loadCustomInstrumentLibrary();
-  delete lib[name];
-  try{ localStorage.setItem('m2g_custom_instruments', JSON.stringify(lib)); }catch{}
-}
-
-// ── Full synth preview (models the whole GRAB param set, not just
-//    waveform+pitch, so Piano/Organ/Bell/etc. actually sound distinct) ──
-let _instrPreviewAC=null, _instrPreviewSrc=null;
-function getInstrPreviewAC(){
-  if(!_instrPreviewAC) _instrPreviewAC=new(window.AudioContext||window.webkitAudioContext)();
-  if(_instrPreviewAC.state==='suspended') _instrPreviewAC.resume();
-  return _instrPreviewAC;
-}
-function synthPreviewPlay(params, midi){
-  try{
-    const ac=getInstrPreviewAC();
-    if(_instrPreviewSrc){ try{_instrPreviewSrc.stop();}catch{} }
-    const waveMap=['sine','square','triangle','sawtooth'];
-    const freq=440*Math.pow(2,(midi-69)/12);
-    const atk=Math.max(0.001,params.envelopeAttack??0.01);
-    const sus=Math.max(0,params.envelopeSustain??0.1);
-    const rel=Math.max(0.02,params.envelopeRelease??0.15);
-    const punch=params.envelopePunch??0;
-    const dur=atk+sus+rel+0.05;
-
-    const osc=ac.createOscillator();
-    osc.type=waveMap[(params.waveType??3)&3]||'sawtooth';
-    osc.frequency.setValueAtTime(freq,ac.currentTime);
-    if(params.frequencyRamp) osc.frequency.linearRampToValueAtTime(Math.max(20,freq*(1+params.frequencyRamp)),ac.currentTime+dur);
-
-    // Vibrato via a modulator oscillator driving detune
-    let vibOsc=null, vibGain=null;
-    if(params.vibratoStrength>0 && params.vibratoSpeed>0){
-      vibOsc=ac.createOscillator(); vibOsc.type='sine';
-      vibOsc.frequency.value=Math.max(0.1,Math.min(40,params.vibratoSpeed));
-      vibGain=ac.createGain(); vibGain.gain.value=Math.min(1,params.vibratoStrength)*50; // cents
-      vibOsc.connect(vibGain); vibGain.connect(osc.detune);
-    }
-
-    const gain=ac.createGain();
-    const peak=Math.min(1,Math.max(0.05,(params.volume??0.8)));
-    const punchPeak=Math.min(1,peak*(1+Math.min(2,punch||0)*0.5));
-    gain.gain.setValueAtTime(0.0001,ac.currentTime);
-    gain.gain.exponentialRampToValueAtTime(punchPeak,ac.currentTime+atk);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001,peak),ac.currentTime+atk+Math.min(0.05,sus*0.3));
-    gain.gain.setValueAtTime(Math.max(0.0001,peak),ac.currentTime+atk+sus);
-    gain.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+atk+sus+rel);
-
-    const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=Math.min(ac.sampleRate/2-100,Math.max(200,params.lowPassFilterFrequency||10000));
-    const hp=ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=Math.max(0,params.highPassFilterFrequency||0);
-
-    osc.connect(gain); gain.connect(lp); lp.connect(hp); hp.connect(ac.destination);
-    osc.start(); if(vibOsc) vibOsc.start();
-    osc.stop(ac.currentTime+dur); if(vibOsc) vibOsc.stop(ac.currentTime+dur);
-    _instrPreviewSrc=osc;
-    setTimeout(()=>{ if(_instrPreviewSrc===osc) _instrPreviewSrc=null; },(dur+0.1)*1000);
-  }catch(e){ console.warn('preview failed',e); }
 }
 
 /**
@@ -3491,24 +3308,14 @@ function runValidator(json, events, pitches){
   const P=pitches.length, N=json.levelNodes?.length||0;
   const dur=events.length?Math.max(...events.map(e=>e.time+e.dur)):0;
   const useCS=document.getElementById('complexSaverCheck')?.checked||false;
-  const total=(json && typeof json._complexityTotal==='number') ? json._complexityTotal : calcComplexity(P,0,+(document.getElementById('voiceNum')?.value||15),useCS).total;
+  const {total}=calcComplexity(P,0,+(document.getElementById('voiceNum')?.value||15),useCS);
 
   if(P===0){ add('err','✖','No notes found — check your MIDI file and track selection.'); return; }
-
-  if(json && Array.isArray(json._prefabParts)){
-    const parts=json._prefabParts;
-    const over=parts.filter(p=>p.complexity>50);
-    add('ok','✔',`${P} unique pitches · ${events.length} note events · ${parts.length} prefab parts · ${N} level nodes`);
-    if(over.length===0) add('ok','✔',`All ${parts.length} parts are ≤50 complexity (largest: ${Math.max(...parts.map(p=>p.complexity))}) — every part is safely prefab-sized.`);
-    else add('err','✖',`${over.length} part(s) exceed 50 complexity: ${over.map(p=>`${p.label} (${p.complexity})`).join(', ')}`);
-    add('info','ℹ',`Total level complexity ${total}/2000. Each part's trigger uses a wildcard source (no external ID), so parts can be extracted/reordered freely.`);
-  } else {
-    if(total<=1000) add('ok','✔',`Complexity ${total}/2000 — well within limit`);
-    else if(total<=1600) add('info','ℹ',`Complexity ${total}/2000 — moderate. Enable Complexity Saver if you plan to add more nodes later.`);
-    else if(total<=1900) add('warn','⚠',`Complexity ${total}/2000 — getting close. Consider enabling Complexity Saver or reducing voices.`);
-    else add('err','✖',`Complexity ${total}/2000 — OVER limit! GRAB will refuse to load this level. Enable Complexity Saver immediately.`);
-    add('ok','✔',`${P} unique pitches · ${events.length} note events · ${N} level nodes`);
-  }
+  add('ok','✔',`${P} unique pitches · ${events.length} note events · ${N} level nodes`);
+  if(total<=1000) add('ok','✔',`Complexity ${total}/2000 — well within limit`);
+  else if(total<=1600) add('info','ℹ',`Complexity ${total}/2000 — moderate. Enable Complexity Saver if you plan to add more nodes later.`);
+  else if(total<=1900) add('warn','⚠',`Complexity ${total}/2000 — getting close. Consider enabling Complexity Saver or reducing voices.`);
+  else add('err','✖',`Complexity ${total}/2000 — OVER limit! GRAB will refuse to load this level. Enable Complexity Saver immediately.`);
   if(dur>180) add('warn','⚠',`Song is ${dur.toFixed(0)}s (${(dur/60).toFixed(1)} min) — very long levels may lag in GRAB. Consider using Loop Count=1 and BPM Scale to shorten.`);
   else if(dur>90) add('info','ℹ',`Song duration: ${dur.toFixed(0)}s — ${(dur/60).toFixed(1)} min. Works fine, but longer songs use more animation memory.`);
   else add('ok','✔',`Duration ${dur.toFixed(1)}s — good length for a GRAB music level`);
@@ -3928,10 +3735,6 @@ window.addEventListener('resize',()=>{
   prefabCheck.addEventListener('change',()=>{
     const on=prefabCheck.checked;
     prefabDesc.style.display=on?'block':'none';
-    // Prefab Friendly builds its own per-part trigger/sensor pattern and
-    // doesn't use the shared voice-block pool or dupe-note logic, so these
-    // are visually dimmed (not disabled outright — harmless if left checked,
-    // simply unused) to avoid implying they still apply.
     [complexSaverCheck, dupeCheck].forEach(cb=>{ cb.disabled=on; });
     [complexSaverCheck.closest('label'), dupeCheck.closest('label')].forEach(l=>{ if(l) l.style.opacity=on?'0.4':'1'; });
     const vf=document.querySelector('.voice-field');
@@ -4253,270 +4056,6 @@ window.addEventListener('resize',()=>{
       drawMiniPiano(pitches);
       drawVelMini(events);
     });
-    renderInstrumentRack();
-  }
-
-  // ═══════════════════════════════════════════════
-  //  INSTRUMENT RACK — detection, rendering, wiring
-  //  (lives inside this IIFE so it shares closure
-  //  access to events/pitches/pitchProgram directly,
-  //  same as processAndRender/buildLevel already do)
-  // ═══════════════════════════════════════════════
-  function detectInstrumentGroups(){
-    if(!events.length) return [];
-    const map=new Map();
-    for(const ev of events){
-      const isDrum=(ev.channel===9);
-      const prog=isDrum?-1:(ev.program ?? pitchProgram?.get(ev.midi) ?? 0);
-      const key=instrGroupKey(prog,isDrum);
-      if(!map.has(key)) map.set(key,{key,program:prog,isDrum,count:0,minP:127,maxP:0});
-      const g=map.get(key);
-      g.count++; if(ev.midi<g.minP)g.minP=ev.midi; if(ev.midi>g.maxP)g.maxP=ev.midi;
-    }
-    return [...map.values()].sort((a,b)=>b.count-a.count).map(g=>{
-      const gmName=g.isDrum?'Drums':(GM_NAMES_GLOBAL[Math.max(0,Math.min(127,g.program))]||'Instrument');
-      const autoPreset=g.isDrum?'drum_kit':_origMatchPresetForGM(gmName,g.program,false);
-      return {...g, gmName, autoPreset};
-    });
-  }
-
-  function effectiveInstrParams(key, autoPreset){
-    const ov=getInstrOverride(key);
-    if(ov.customParams) return ov.customParams;
-    const pk=ov.presetOverride||autoPreset;
-    return GRAB_SOUND_REF_PRESETS[pk] || GRAB_SOUND_REF_PRESETS.piano;
-  }
-
-  function renderInstrumentRack(){
-    const wrap=document.getElementById('instrRackWrap');
-    const grid=document.getElementById('instrGrid');
-    if(!wrap||!grid) return;
-    const groups=detectInstrumentGroups();
-    if(groups.length<=1 && !groups.some(g=>g.isDrum)){ wrap.style.display='none'; return; }
-    wrap.style.display='block';
-    document.getElementById('instrCountBadge').textContent=`(${groups.length} detected)`;
-    grid.innerHTML='';
-    groups.forEach(g=>{
-      const ov=getInstrOverride(g.key);
-      const icon=g.isDrum?'🥁':(INSTR_ICONS[g.autoPreset]||'🎵');
-      const noteLo=noteName(g.minP), noteHi=noteName(g.maxP);
-      const card=document.createElement('div');
-      card.className='instr-card'+(ov.muted?' muted':'')+(ov.solo?' solo':'');
-      card.dataset.key=g.key;
-      card.innerHTML=`
-        <div class="instr-card-hdr">
-          <span class="instr-icon">${icon}</span>
-          <div class="instr-title-block">
-            <div class="instr-name">${g.gmName}</div>
-            <div class="instr-meta">${g.count} notes · ${noteLo}–${noteHi}${g.isDrum?'':' · GM '+g.program}</div>
-          </div>
-          <button class="instr-mini-btn${ov.muted?' active':''}" data-act="mute" title="Mute">🔇</button>
-          <button class="instr-mini-btn${ov.solo?' active':''}" data-act="solo" title="Solo">🎧</button>
-        </div>
-        <div class="instr-row">
-          <label>Sound</label>
-          ${g.isDrum
-            ? `<span class="instr-fixed-badge">🥁 Fixed drum kit (per-hit sounds)</span>`
-            : `<select class="instr-preset-select" data-act="preset">
-                <option value="">Auto (${(INSTR_PRESET_LABELS[g.autoPreset]||g.autoPreset).replace(/^\S+\s/,'')})</option>
-                ${Object.keys(INSTR_PRESET_LABELS).map(k=>`<option value="${k}" ${!ov.customParams&&ov.presetOverride===k?'selected':''}>${INSTR_PRESET_LABELS[k]}</option>`).join('')}
-                <option value="__custom__" ${ov.customParams?'selected':''}>✨ Custom…</option>
-              </select>`}
-        </div>
-        <div class="instr-row">
-          <label>Volume <span class="instr-val" data-val="volume">${Math.round((ov.volumeMult||1)*100)}%</span></label>
-          <input type="range" class="instr-slider" data-act="volume" min="0" max="2" step="0.05" value="${ov.volumeMult??1}"/>
-        </div>
-        <div class="instr-row">
-          <label>Transpose <span class="instr-val" data-val="transpose">${(ov.transpose||0)>0?'+':''}${ov.transpose||0}st</span></label>
-          <input type="range" class="instr-slider" data-act="transpose" min="-24" max="24" step="1" value="${ov.transpose||0}"/>
-        </div>
-        <div class="instr-btn-row">
-          <button class="instr-btn" data-act="preview">🔊 Preview</button>
-          ${g.isDrum?'':'<button class="instr-btn" data-act="advanced">🎛 Advanced</button>'}
-          ${g.isDrum?'':'<button class="instr-btn" data-act="save">💾 Save</button>'}
-          <button class="instr-btn" data-act="reset">↺ Reset</button>
-        </div>
-        <div class="instr-adv-body" data-adv style="display:none"></div>
-      `;
-      grid.appendChild(card);
-    });
-    renderMyInstrumentLibrary();
-    wireInstrCardEvents();
-  }
-
-  function renderMyInstrumentLibrary(){
-    const lib=loadCustomInstrumentLibrary();
-    const names=Object.keys(lib);
-    const wrap=document.getElementById('instrMyLibWrap');
-    const list=document.getElementById('instrMyLib');
-    if(!wrap||!list) return;
-    if(names.length===0){ wrap.style.display='none'; return; }
-    wrap.style.display='block';
-    list.innerHTML=names.map(n=>`<span class="instr-my-chip" data-lib="${n}">✨ ${n} ✕</span>`).join('');
-    list.querySelectorAll('[data-lib]').forEach(chip=>{
-      chip.addEventListener('click',e=>{
-        const name=chip.dataset.lib;
-        if(e.offsetX > chip.offsetWidth-14){ // clicked near the ✕
-          if(confirm(`Delete saved instrument "${name}"?`)){ deleteCustomInstrumentFromLibrary(name); renderMyInstrumentLibrary(); }
-          return;
-        }
-        window._m2g._pendingLibApply=name;
-        ss(statusEl, `Selected "${name}" — now click Advanced → Load on any instrument card to apply it.`,'ok');
-      });
-    });
-  }
-
-  let _instrGridWired=false;
-  function wireInstrCardEvents(){
-    const grid=document.getElementById('instrGrid');
-    if(!grid || _instrGridWired) return;
-    _instrGridWired=true;
-
-    grid.addEventListener('click', e=>{
-      const btn=e.target.closest('[data-act]'); if(!btn) return;
-      const card=e.target.closest('.instr-card'); const key=card?.dataset.key; if(!key) return;
-      const ov=getInstrOverride(key);
-      const act=btn.dataset.act;
-      const groups=detectInstrumentGroups();
-      const g=groups.find(x=>x.key===key);
-
-      if(act==='mute'){ ov.muted=!ov.muted; if(ov.muted) ov.solo=false; renderInstrumentRack(); }
-      else if(act==='solo'){ ov.solo=!ov.solo; if(ov.solo) ov.muted=false; renderInstrumentRack(); }
-      else if(act==='reset'){ window._m2g._instrumentOverrides[key]={muted:false,solo:false,presetOverride:null,customParams:null,volumeMult:1,transpose:0}; renderInstrumentRack(); }
-      else if(act==='preview' && g){
-        const midi=Math.round((g.minP+g.maxP)/2)||60;
-        const params=effectiveInstrParams(key,g.autoPreset);
-        synthPreviewPlay({...params, frequencyBase:undefined}, midi);
-      }
-      else if(act==='advanced'){ toggleAdvancedPanel(card,key,g);
-      }
-      else if(act==='save' && g){
-        const params=effectiveInstrParams(key,g.autoPreset);
-        const name=prompt('Save this instrument sound as:', g.gmName);
-        if(name){ saveCustomInstrumentToLibrary(name.trim(), params); renderMyInstrumentLibrary(); ss(statusEl,`Saved "${name.trim()}" to My Instruments.`,'ok'); }
-      }
-    });
-
-    grid.addEventListener('change', e=>{
-      const card=e.target.closest('.instr-card'); if(!card) return;
-      const key=card.dataset.key; const ov=getInstrOverride(key);
-      if(e.target.dataset.act==='preset'){
-        const val=e.target.value;
-        if(val==='__custom__'){
-          const groups=detectInstrumentGroups();
-          const g=groups.find(x=>x.key===key);
-          ov.customParams={...effectiveInstrParams(key, g?g.autoPreset:'piano')};
-          ov.presetOverride=null;
-          renderInstrumentRack();
-          requestAnimationFrame(()=>{ const c=document.querySelector(`.instr-card[data-key="${CSS.escape(key)}"]`); const g2=detectInstrumentGroups().find(x=>x.key===key); if(c) toggleAdvancedPanel(c,key,g2,true); });
-        } else {
-          ov.presetOverride=val||null;
-          ov.customParams=null;
-        }
-      }
-    });
-
-    grid.addEventListener('input', e=>{
-      const card=e.target.closest('.instr-card'); if(!card) return;
-      const key=card.dataset.key; const ov=getInstrOverride(key);
-      if(e.target.dataset.act==='volume'){ ov.volumeMult=+e.target.value; const v=card.querySelector('[data-val="volume"]'); if(v) v.textContent=Math.round(ov.volumeMult*100)+'%'; }
-      if(e.target.dataset.act==='transpose'){ ov.transpose=+e.target.value; const v=card.querySelector('[data-val="transpose"]'); if(v) v.textContent=(ov.transpose>0?'+':'')+ov.transpose+'st'; }
-      // Advanced panel field edits update customParams live
-      if(e.target.dataset.adv){
-        if(!ov.customParams) ov.customParams={};
-        const k=e.target.dataset.adv;
-        ov.customParams[k] = k==='waveType' ? parseInt(e.target.value,10) : parseFloat(e.target.value);
-      }
-    });
-  }
-
-  const ADV_PARAM_KEYS=['volume','waveType','envelopeAttack','envelopeSustain','envelopeRelease','envelopePunch','frequencyRamp','frequencyDeltaRamp','vibratoStrength','vibratoSpeed','dutyCycle','repeatSpeed','flangerFrequency','flangerDepth','lowPassFilterFrequency','highPassFilterFrequency','reverbDelay','reverbDecayFactor'];
-  function toggleAdvancedPanel(card, key, g, forceOpen){
-    const body=card.querySelector('[data-adv]');
-    if(!body) return;
-    const isOpen=body.style.display!=='none';
-    if(isOpen && !forceOpen){ body.style.display='none'; return; }
-    const ov=getInstrOverride(key);
-    const params=ov.customParams || effectiveInstrParams(key, g?g.autoPreset:'piano');
-    body.innerHTML=`
-      <div class="instr-adv-grid">
-        ${ADV_PARAM_KEYS.map(k=>{
-          if(k==='waveType') return `<div class="instr-adv-field"><label>waveType</label><select data-adv="waveType"><option value="0" ${params.waveType===0?'selected':''}>Sine</option><option value="1" ${params.waveType===1?'selected':''}>Square</option><option value="2" ${params.waveType===2?'selected':''}>Triangle</option><option value="3" ${params.waveType===3?'selected':''}>Sawtooth</option></select></div>`;
-          return `<div class="instr-adv-field"><label>${k}</label><input type="number" step="0.01" data-adv="${k}" value="${(params[k]??0)}"/></div>`;
-        }).join('')}
-      </div>
-      <div style="display:flex;gap:5px">
-        <button class="instr-btn" data-loadlib="1">📂 Load from My Instruments</button>
-      </div>
-    `;
-    if(!ov.customParams) ov.customParams={...params}; // switching to Advanced always edits a real customParams object
-    body.style.display='flex';
-    const loadBtn=body.querySelector('[data-loadlib]');
-    if(loadBtn) loadBtn.addEventListener('click',()=>{
-      const name=window._m2g._pendingLibApply;
-      if(!name){ alert('Click a saved instrument chip in "My Saved Instruments" first, then press this button.'); return; }
-      const lib=loadCustomInstrumentLibrary();
-      if(lib[name]){ ov.customParams={...lib[name].params}; ov.presetOverride=null; renderInstrumentRack(); ss(statusEl,`Applied "${name}" to this instrument.`,'ok'); }
-    });
-  }
-
-  // ── Remix ─────────────────────────────────────────────────────────────
-  const REMIX_STYLES={
-    random:      Object.keys(INSTR_PRESET_LABELS),
-    chiptune:    ['bell','synth_lead','organ','piano'],
-    orchestral:  ['strings','brass','woodwind','choir','flute'],
-    ambient:     ['pad','choir','organ','strings'],
-    electric:    ['guitar','bass','synth_lead','brass']
-  };
-  let _preRemixState=null;
-  document.getElementById('remixBtn')?.addEventListener('click',()=>{
-    const groups=detectInstrumentGroups();
-    if(!groups.length) return;
-    _preRemixState=JSON.parse(JSON.stringify(window._m2g._instrumentOverrides));
-    const style=document.getElementById('remixStyleSel').value;
-    const pool=REMIX_STYLES[style]||REMIX_STYLES.random;
-    const changes=[];
-    groups.forEach(g=>{
-      if(g.isDrum) return; // drums keep their fixed kit
-      const ov=getInstrOverride(g.key);
-      const pick=pool[Math.floor(Math.random()*pool.length)];
-      ov.presetOverride=pick; ov.customParams=null;
-      changes.push(`${g.gmName}→${(INSTR_PRESET_LABELS[pick]||pick).replace(/^\S+\s/,'')}`);
-    });
-    renderInstrumentRack();
-    document.getElementById('instrRackStatus').textContent=`🎲 Remixed: ${changes.join(', ')}`;
-  });
-  document.getElementById('revertRemixBtn')?.addEventListener('click',()=>{
-    if(_preRemixState){ window._m2g._instrumentOverrides=_preRemixState; _preRemixState=null; }
-    else { const groups=detectInstrumentGroups(); groups.forEach(g=>{ window._m2g._instrumentOverrides[g.key]={muted:false,solo:false,presetOverride:null,customParams:null,volumeMult:1,transpose:0}; }); }
-    renderInstrumentRack();
-    document.getElementById('instrRackStatus').textContent='↺ Reverted to original instruments.';
-  });
-
-  // Applies mute/solo/transpose/volume overrides to a COPY of events —
-  // called at build time, never mutates the live `events` used for display.
-  function applyInstrumentOverridesToEvents(rawEvents){
-    const overrides=window._m2g._instrumentOverrides;
-    const anySolo=Object.values(overrides).some(o=>o.solo);
-    const out=[];
-    for(const ev of rawEvents){
-      const isDrum=(ev.channel===9);
-      const prog=isDrum?-1:(ev.program ?? pitchProgram?.get(ev.midi) ?? 0);
-      const key=instrGroupKey(prog,isDrum);
-      const ov=overrides[key];
-      if(ov){
-        if(ov.muted) continue;
-        if(anySolo && !ov.solo) continue;
-        const midi=Math.max(0,Math.min(127,ev.midi+(ov.transpose||0)));
-        const vel=Math.max(0.01,Math.min(1,ev.vel*(ov.volumeMult??1)));
-        out.push({...ev, midi, vel});
-        continue;
-      }
-      if(anySolo) continue;
-      out.push(ev);
-    }
-    return out;
   }
 
   function getAC(){if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended') audioCtx.resume();return audioCtx;}
@@ -4579,6 +4118,12 @@ window.addEventListener('resize',()=>{
     const blockSc=+document.getElementById('blockScale')?.value||0.8;
     const blockNeon=document.getElementById('blockNeonCheck')?.checked!==false;
 
+    // Apply Instrument Rack overrides (mute/solo/transpose/volume) to a
+    // COPY of events before building — never mutates the live `events`
+    // used for display/preview.
+    const builtEvents = applyInstrumentOverridesToEvents(events);
+    if(!builtEvents.length){ss(statusEl,'All instruments are muted (or nothing is soloed) — nothing to build.','err');return;}
+
     // Safe complexity-total reader: prefers the value the builder itself
     // attached to the JSON (always present for prefab mode), otherwise
     // falls back to the normal calcComplexity(...) call. This guarantees
@@ -4587,11 +4132,11 @@ window.addEventListener('resize',()=>{
       return (json && typeof json._complexityTotal==='number') ? json._complexityTotal : (fallbackTotal ?? 0);
     }
 
-    let json, total, P=pitches.length, statusMsg, expMsg;
+    let json, total, P=[...new Set(builtEvents.map(e=>e.midi))].length, statusMsg, expMsg;
 
     if(usePrefab){
       json = buildPrefabFriendlyJSON({
-        events, title:levelTitle, creator:levelCreator, description:levelDesc,
+        events:builtEvents, title:levelTitle, creator:levelCreator, description:levelDesc,
         tags:tags.length?tags:['innovative','showcase'], ambienceSettings:ambience,
         vol:+volEl.value||.8, atk:+atkEl.value||.01, wave:+waveSel.value,
         reverbDelay:+reverbDelayEl?.value||0, reverbDecay:+reverbDecayEl?.value||0,
@@ -4609,7 +4154,7 @@ window.addEventListener('resize',()=>{
       expMsg = `${parts.length} parts · max ${maxPC}/50 per part · complexity ${total}`;
     } else {
       json=buildLevelJSON({
-        events,voiceCount:VC,
+        events:builtEvents,voiceCount:VC,
         spacing:+spacingEl.value||3,
         vol:+volEl.value||.8,
         atk:+atkEl.value||.01,
@@ -4676,9 +4221,9 @@ window.addEventListener('resize',()=>{
         json._instrGuide?json._instrGuide.reduce((s,g)=>s+g.uniquePitches,0):P,
         json._instrGuide?json._instrGuide.length:1);
     }
-    runValidator(json, events, pitches);
-    pushBuildHistory(json, events);
-    renderLevelSummary(json, events, total);
+    runValidator(json, builtEvents, [...new Set(builtEvents.map(e=>e.midi))]);
+    pushBuildHistory(json, builtEvents);
+    renderLevelSummary(json, builtEvents, total);
     autoSaveLevel(json);
   }
 
@@ -6620,12 +6165,11 @@ function settingsImport(file){
 // ═══════════════════════════════════════════════
 const _buildHistory=[];
 function pushBuildHistory(json, events){
-  const fallback=calcComplexity(
+  const {total}=calcComplexity(
     [...new Set(events.map(e=>e.midi))].length, 0,
     +(document.getElementById('voiceNum')?.value||15),
     document.getElementById('complexSaverCheck')?.checked
-  ).total;
-  const total=(json && typeof json._complexityTotal==='number') ? json._complexityTotal : fallback;
+  );
   _buildHistory.unshift({title:json.title||'midi_level', time:new Date(), nodes:json.levelNodes?.length||0, complexity:total, json});
   if(_buildHistory.length>8) _buildHistory.pop();
   renderBuildHistory();
@@ -6953,7 +6497,7 @@ function generateForumPost(json, events){
   const dur=events.length?Math.max(...events.map(e=>e.time+e.dur)):0;
   const useCS=document.getElementById('complexSaverCheck')?.checked||false;
   const VC=+(document.getElementById('voiceNum')?.value||15);
-  const total=(json && typeof json._complexityTotal==='number') ? json._complexityTotal : calcComplexity(pitches.length,0,VC,useCS).total;
+  const {total}=calcComplexity(pitches.length,0,VC,useCS);
   const bpmEl=document.getElementById('sBpm');
   const bpm=bpmEl?.textContent?.replace(/[^\d]/g,'')||'?';
   const lo=NOTE_NAMES[pitches[0]%12]+(Math.floor(pitches[0]/12)-1);
